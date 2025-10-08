@@ -2,6 +2,8 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const express = require('express');
 require('dotenv').config();
+const path = require('path');
+const favicon = require('serve-favicon');
 const connectDB = require('./config/db');
 const cors = require('cors');
 const morganLogging = require('./server/logging');
@@ -17,6 +19,10 @@ const paintingsRoutes = require('./routes/paintings');
 const app = express();
 const docsRouter = require('./server/docs');
 app.disable('x-powered-by');
+// Favicon & static assets
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.get('/healthz', (req,res)=>res.json({ok:true}));
 app.use(helmet({crossOriginEmbedderPolicy: false}));
 // Request logging
