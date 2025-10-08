@@ -36,3 +36,20 @@ All list endpoints accept `?page=&limit=`. If omitted, full list is returned (le
 ## API Docs
 - Swagger UI available at: `/api/docs`
 - Raw spec: `/api/docs/openapi.yaml` or `/api/docs/openapi.json`
+
+
+## Tests & Lint (added)
+- **Tests:** Jest + Supertest (backend). Run:
+  ```bash
+  cd backend
+  npm i
+  npm test
+  ```
+- **Coverage:** `npm run coverage`
+- **Linting/Formatting:** ESLint + Prettier
+  ```bash
+  npm run lint
+  npm run format
+  ```
+
+> Σημείωση: Το `server.js` πλέον κάνει export το `app` και αποφεύγει το `listen` όταν `NODE_ENV=test`, ώστε τα tests να τρέχουν χωρίς να ανοίγει port.

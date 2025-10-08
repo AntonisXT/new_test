@@ -53,4 +53,6 @@ app.use('/api/links', require('./routes/links'));
 const PORT = process.env.PORT || 10000;
 // Centralized error handler
 app.use(errorHandler);
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+module.exports = app;
+
+if (process.env.NODE_ENV !== 'test') app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
