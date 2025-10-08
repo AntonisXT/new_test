@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El Greco - Βιογραφία και Έργα</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="grid-container">
+    <header>
+      <h1>Δομήνικος Θεοτοκόπουλος (El Greco)</h1>
+    </header>
+    
+    <nav>
+      <ul>
+        <li><a href="#" data-section="biography">Βιογραφία</a></li>
+        <li><a href="#" data-section="paintings">Πίνακες</a></li>
+        <li><a href="#" data-section="exhibitions">Εκθέσεις</a></li>
+        <li><a href="#" data-section="links">Σύνδεσμοι</a></li>
+        <li><a href="#" data-section="management">Διαχείριση</a></li>
+      </ul>
+    </nav>
+    
+    <div class="main-container">
+      <aside>
+        <div id="aside-biography" class="hidden">
+  <ul id="bioList"></ul>
+</div>
+        <div id="aside-paintings" class="hidden">
+  <ul id="paintList"></ul>
+</div>
+        <div id="aside-exhibitions" class="hidden">
+  <ul id="exhList"></ul>
+</div>
+        <div id="aside-links" class="hidden">
+  <ul id="linkList"></ul>
+</div>
+        <div id="aside-management" class="hidden">
+          <div id="loginFormContainer" class="hidden">
+            <h2>Διαχειριστής</h2>
+            <form id="loginForm">
+              <label for="username">Όνομα Διαχειριστή:</label>
+              <input type="text" id="username" required>
+              <label for="password">Κωδικός:</label>
+              <input type="password" id="password" required>
+              <button type="submit">Σύνδεση</button>
+            </form>
+          </div>
+          
+          <div id="loggedInContainer" class="hidden">
+            <h2>Καλώς ήρθες!</h2>
+            <button id="logoutButton">Αποσύνδεση</button>
+            
+            <div id="managementMenu" class="hidden">
+              <h2>Διαχείριση</h2>
+              <div class="management-options-container">
+                <a href="#" id="manageExhibitions" class="management-option">
+                  <div class="management-card">
+                    <h3>Εκθέσεις</h3>
+                  </div>
+                </a>
+                <a href="#" id="manageLinks" class="management-option">
+                  <div class="management-card">
+                    <h3>Σύνδεσμοι</h3>
+                  </div>
+                </a>
+              </div>
+            </div>
+        </div>
+      </aside>
+      
+      <main>
+        <section id="content">
+        </section>
+      </main>
+    </div>
+    
+    <footer>
+      <p>© 2025 - Εργασία για τον Δομήνικο Θεοτοκόπουλο</p>
+    </footer>
+  </div>
+  <script type="module" src="js/app.js"></script>  
+</body>
+</html>

@@ -1,0 +1,1236 @@
+body, h1, p, ul, li, a {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Georgia", serif;
+  line-height: 1.6;
+  background-color: #f8f5f0;
+  color: #333;
+  min-height: 100vh;
+}
+
+/* Grid Layout */
+.grid-container {
+  display: grid;
+  grid-template-areas:
+    "header"
+    "nav"
+    "main"
+    "footer";
+  grid-template-rows: auto auto 1fr auto;
+  min-height: 100vh;
+}
+
+header {
+  grid-area: header;
+  background: #4b3e27;
+  color: #fefae0;
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 5px solid #e09f3e;
+}
+
+nav {
+  grid-area: nav;
+  background: #6a4e36;
+  color: #fefae0;
+  padding: 0.5rem;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: space-around;
+}
+
+nav a {
+  color: #fefae0;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+nav a:hover {
+  color: #e09f3e;
+}
+
+.main-container {
+  grid-area: main;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+}
+
+aside {
+  background: #d9cab3;
+  padding: 1.5rem;
+  border-right: 2px solid #4b3e27;
+}
+
+aside h2 {
+  color: #4b3e27;
+  margin-bottom: 1rem;
+}
+
+aside ul li a {
+  color: #6a4e36;
+  text-decoration: none;
+}
+
+aside ul li a:hover {
+  color: #e09f3e;
+}
+
+footer {
+  grid-area: footer;
+  background: #4b3e27;
+  color: #fefae0;
+  text-align: center;
+  padding: 1rem;
+  border-top: 5px solid #e09f3e;
+}
+
+/* Hidden Elements */
+.hidden {
+  display: none;
+}
+
+/* Login Form Styles */
+#loginFormContainer {
+  margin: 0 auto;
+  padding: 1em;
+  border: 1px solid #4b3e27;
+  border-radius: 5px;
+  background-color: #e6e0d4; /* Απαλό γκρι-μπεζ */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+}
+
+#loginForm label {
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  display: block;
+}
+
+#loginForm input, #loginForm button {
+  display: block;
+  width: 90%;
+  padding: 0.5em;
+  font-size: 1rem;
+  margin-bottom: 1em;
+  border: 1px solid #6a4e36;
+  border-radius: 5px;
+}
+
+#loginForm input[type="text"],
+#loginForm input[type="password"],
+#login-form input[type="text"],
+#login-form input[type="password"]{
+  width: 100% !important;
+  height: 40px !important;
+  display: block;
+  box-sizing: border-box;
+}
+
+#loginForm button {
+  background-color: #6a4e36;
+  color: #fefae0;
+  border: none;
+  cursor: pointer;
+}
+
+#loginForm button:hover {
+  background-color: #4b3e27;
+}
+
+#logoutButton {
+  padding: 0.2em 1.5em;
+  background-color: #b23c17; /* Δραματικό κόκκινο */
+  color: #fefae0;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+#logoutButton:hover {
+  background-color: #7f1d1d;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .main-container {
+    flex-direction: column;
+  }
+
+  aside {
+    width: 100%;
+    padding: 1rem;
+    border-right: none;
+  }
+
+  main {
+    padding: 1rem;
+  }
+
+  #loginFormContainer {
+    max-width: none;
+  }
+}
+
+/* Βασικά στυλ για το body */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f7f7f7;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+/* Στυλ για τον τίτλο "Επιλογές Διαχειριστή" */
+#managementMenu h2 {
+  font-size: 1.8rem;
+  color: #333;
+  font-weight: bold;
+  margin-top: 50px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* Στυλ για το κουμπί αποσύνδεσης */
+.logout-btn {
+  padding: 10px 20px;
+  background-color: #e74c3c;
+  color: white;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 20px;
+}
+
+.logout-btn:hover {
+  background-color: #c0392b;
+}
+
+/* Στυλ για το μενού διαχείρισης */
+#managementMenu {
+  display: none; /* Κρυφό μέχρι να γίνει σύνδεση */
+}
+
+#managementMenu.visible {
+  display: block;
+}
+
+/* Κεντρικοποίηση και στυλ για το container των επιλογών διαχείρισης */
+.management-options-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+
+  gap: 26px;
+
+  padding: 15px;
+}
+
+/* Στυλ για κάθε επιλογή */
+.management-option {
+  display: block;
+  text-decoration: none;
+  color: #333;
+
+  outline: none;
+}
+
+.management-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.management-card h3 {
+  font-size: 1rem;
+  text-align: center;
+}
+
+/* Αλλαγή χρώματος για το hover effect */
+.management-option:hover 
+
+/* Στυλ για τις κάρτες */
+.management-card h3, .management-card p {
+  color: #333;
+}
+
+/* Φόρμες διαχείρισης */
+.management-form {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border-radius: 5px;
+}
+
+.management-form div {
+  margin-bottom: 15px;
+}
+
+.management-form label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.management-form input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.management-form button {
+  background-color: #6a4e36;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.management-form button:hover {
+  background-color: #4b3e27;
+}
+
+/* Λίστα αντικειμένων */
+.item {
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+}
+
+.item p {
+  margin: 0;
+  flex-grow: 1;
+}
+
+.item button {
+  margin-left: 10px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.item button:first-of-type {
+  background-color: #4b3e27;
+  color: white;
+}
+
+.item button:last-of-type {
+  background-color: #b23c17;
+  color: white;
+}
+
+.item button:hover {
+  opacity: 0.8;
+}
+
+/* Προσθήκη στυλ για τις φόρμες */
+#exhibitionForm, #linkForm {
+  background-color: #f8f5f0;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#exhibitionForm div, #linkForm div {
+  margin-bottom: 15px;
+}
+
+#exhibitionForm label, #linkForm label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #4b3e27;
+}
+
+#exhibitionForm input, #linkForm input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #d9cab3;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+#exhibitionForm button, #linkForm button {
+  background-color: #6a4e36;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+#exhibitionForm button:hover, #linkForm button:hover {
+  background-color: #4b3e27;
+}
+
+/* Λίστες εκθέσεων και συνδέσμων */
+#exhibitionsList, #linksList {
+  margin-top: 20px;
+}
+
+.exhibition-item, .link-item {
+  background-color: white;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.exhibition-item:hover, .link-item:hover {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Στυλ για τα κουμπιά διαχείρισης */
+.manage-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.edit-button, .delete-button {
+  padding: 5px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s;
+}
+
+.edit-button {
+  background-color: #4b3e27;
+  color: white;
+}
+
+.delete-button {
+  background-color: #b23c17;
+  color: white;
+}
+
+.edit-button:hover, .delete-button:hover {
+  opacity: 0.8;
+}
+
+
+/* --- Enhanced main background for readability --- */
+main {
+  background: radial-gradient(ellipse at top left, rgba(255,255,255,0.95), rgba(248,248,248,0.95) 40%, rgba(242,242,242,0.95)),
+              repeating-linear-gradient(0deg, rgba(0,0,0,0.02) 0, rgba(0,0,0,0.02) 1px, transparent 1px, transparent 24px);
+  backdrop-filter: blur(1px);
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+/* Generic card look for forms/sections */
+.card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-row {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+  margin: .5rem 0;
+}
+
+.form-row input, .form-row textarea, select {
+  width: 100%;
+  padding: .5rem .75rem;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font: inherit;
+  background: #fafafa;
+}
+
+.form-row button, button {
+  border: none;
+  border-radius: 10px;
+  padding: .5rem .9rem;
+  cursor: pointer;
+  background: #e09f3e;
+  color: #fff;
+}
+
+/* === THEME: Warm parchment + amber accents === */
+:root{
+  --bg-main: #f8f4ec;
+  --card-bg: #fffdf8;
+  --ink: #2c2a25;
+  --muted: #6b665c;
+  --accent: #caa353; /* amber/gold */
+  --accent-hover: #b48c3f;
+  --border: #e8e1d5;
+  --shadow: 0 10px 20px rgba(0,0,0,.06);
+  --radius: 14px;
+}
+
+body{ background: var(--bg-main); color: var(--ink); }
+
+main, #content{
+  background: linear-gradient(180deg, rgba(255,255,255,.6), rgba(255,255,255,.3));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* Cards */
+.card{
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+}
+.card h2, .card h3{ margin: .2rem 0 1rem; color: var(--ink); }
+hr{ border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+
+/* Forms */
+.form-grid{ display:grid; grid-template-columns: repeat(2,minmax(240px,1fr)); gap: 1rem 1.25rem; }
+.form-row{ display:flex; flex-direction:column; }
+.form-row label{ font-weight:600; color: var(--muted); margin-bottom:.35rem; }
+input[type="text"], input[type="url"], input[type="date"], select, textarea{
+  padding:.65rem .75rem; border-radius:10px; border:1px solid var(--border); background:#fff;
+  outline:none; box-shadow: inset 0 1px 0 rgba(0,0,0,.02);
+}
+textarea{ min-height:180px; resize:vertical; }
+input:focus, select:focus, textarea:focus{ border-color: var(--accent); box-shadow: 0 0 0 3px rgba(202,163,83,.15); }
+
+/* Buttons */
+button{ appearance:none; border:none; border-radius:999px; padding:.55rem 1rem; font-weight:600; cursor:pointer; background: var(--accent); color:#fff; box-shadow: var(--shadow); }
+button:hover{ background: var(--accent-hover); }
+button.secondary{ background:#d9d2c3; color:#3a372f; }
+button.secondary:hover{ background:#cfc7b6; }
+button.danger{ background:#b9574b; }
+button.danger:hover{ background:#a4483c; }
+
+/* Tables */
+.table-wrap{ overflow:auto; }
+.table{ border-collapse: collapse; width:100%; }
+.table th, .table td{ padding:.6rem .8rem; border-bottom:1px solid var(--border); }
+.table tr:hover{ background:#fffbf0; }
+
+/* Sidebar lists */
+aside ul li a{ display:block; padding:.35rem .5rem; border-radius:8px; }
+aside ul li a:hover{ background:#fff4d8; }
+
+/* === Admin main-area refined light parchment theme === */
+:root{
+  --bg-main: #f3efe6;
+  --panel-bg: #f5f1e8;
+  --card-bg: #faf6ec;
+  --ink: #2c2a25;
+  --muted: #5e584e;
+  --accent: #caa353;
+  --accent-hover: #b48c3f;
+  --border: #ddd2bd;
+  --border-strong: #cbbda3;
+  --shadow: 0 10px 20px rgba(92, 79, 55, .10);
+  --radius: 14px;
+}
+main, #content{
+  background: var(--panel-bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1rem 1.2rem;
+}
+.card{
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 1.1rem 1.25rem;
+  margin: 1rem 0 1.25rem;
+}
+.card h2, .card h3{
+  color: var(--ink);
+  margin: .2rem 0 1rem;
+}
+.form-grid{
+  display:grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px 16px;
+}
+.form-row{ display:flex; flex-direction:column; grid-column: span 6; }
+.form-row.wide{ grid-column: 1 / -1; }
+.form-row label{
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: .35rem;
+}
+input[type="text"], input[type="url"], input[type="date"], select, textarea{
+  padding: .65rem .75rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: #fffdf7;
+  outline: none;
+  font-size: 0.98rem;
+}
+textarea{ min-height: 220px; resize: vertical; }
+input:focus, select:focus, textarea:focus{
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(202, 163, 83, .14);
+}
+.actions{
+  display:flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: .2rem;
+}
+button{
+  border: none;
+  border-radius: 999px;
+  padding: .58rem 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--accent);
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+button:hover{ background: var(--accent-hover); }
+button.secondary{ background: #e2d9c6; color: #3a372f; }
+button.secondary:hover{ background: #d7cdb6; }
+button.danger{ background: #b9574b; }
+button.danger:hover{ background: #a4483c; }
+.table-wrap{ overflow: auto; background: #fffdf8; border: 1px solid var(--border); border-radius: 12px; }
+.table{ border-collapse: collapse; width: 100%; font-size: .98rem; }
+.table th, .table td{ padding: .7rem .85rem; border-bottom: 1px solid var(--border); }
+.table thead th{ background: #f1eadc; color: #3e3a33; text-align: left; }
+.table tbody tr:nth-child(odd){ background: #fbf7ee; }
+.table tbody tr:hover{ background: #fff6d8; }
+
+aside ul li a{
+  display:block;
+  padding:.38rem .55rem;
+  border-radius: 8px;
+}
+aside ul li a:hover{ background: #fff2cb; }
+
+:root{
+  --control-h: 44px;
+}
+
+input[type="text"], input[type="url"], input[type="date"], select{
+  height: var(--control-h);
+}
+
+button{
+  min-height: var(--control-h);
+  display: inline-flex;
+  align-items: center;
+}
+
+/* inline row for input + button */
+.form-row.inline{ flex-direction: row; align-items: center; gap: 10px; }
+.form-row.inline > label{ margin: 0; white-space: nowrap; }
+
+/* move save under textarea to the right */
+.row-end{ display:flex; justify-content:flex-end; }
+
+/* action cell with edit left, delete right */
+td.actions-cell{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+td.actions-cell .spacer{ flex:1; }
+
+/* make tables consistent width inside cards */
+.card .table-wrap{ width:100%; }
+
+.form-row > label,
+.card .form-row > label{
+  text-align: left !important;
+  align-self: flex-start;
+}
+
+/*  Categories: keep input & button same height; tighten gap */
+.form-row.inline.tight{ flex-direction: row; align-items: center; gap: 8px; }
+.form-row.inline.tight input[type="text"]{ flex:1; }
+.form-row.inline.tight button{ min-width: 150px; }
+
+/* 4) File input full width look similar to selects */
+input[type="file"]{
+  height: var(--control-h, 44px);
+  display: inline-flex;
+  align-items: center;
+  padding: .35rem .6rem;
+  border: 1px solid var(--border-strong, #cbbda3);
+  border-radius: 10px;
+  background: #fffdf7;
+  box-sizing: border-box;
+}
+
+/* 5) Action cell: Edit left, Delete right */
+td.actions-cell{ display:flex; align-items:center; gap:12px; }
+td.actions-cell .spacer{ flex:1; }
+
+/* Ensure consistent control height and centered button text */
+:root{ --control-h: 44px; }
+input[type="text"], input[type="url"], input[type="date"], select, input[type="file"]{
+  height: var(--control-h);
+  width: 100%;
+  box-sizing: border-box;
+}
+button{ min-height: var(--control-h); display: inline-flex; align-items: center; justify-content: center; }
+
+/* Labels always left-aligned above inputs */
+.form-row > label{ text-align:left !important; align-self:flex-start; margin-bottom:.35rem; }
+
+/* Grid helpers to align input under label and button to the right column */
+/* Guarantee two equal halves look aligned */
+.form-row.half{ grid-column: span 6; }
+.form-row.wide{ grid-column: 1 / -1; }
+
+/* Make action cell show edit left and delete right with spacer */
+td.actions-cell{ display:flex; align-items:center; gap:12px; }
+td.actions-cell .spacer{ flex:1; }
+
+:root{ --control-h: 44px; }
+
+.card .form-row > label{ 
+  display:block; 
+  text-align:left; 
+  margin:0 0 .35rem 0; 
+}
+
+.card .form-row.wide > input[type="text"],
+.card .form-row.wide > input[type="url"],
+.card .form-row.wide > input[type="date"],
+.card .form-row.wide > input[type="file"],
+.card .form-row.wide > select,
+.card .form-row.half > input[type="text"],
+.card .form-row.half > select{
+  width:100%;
+  height:var(--control-h);
+  box-sizing:border-box;
+}
+
+.card .form-row.wide button,
+.card .form-row.half button{
+  min-height:var(--control-h);
+  display:inline-flex;align-items:center;justify-content:center;
+}
+
+.row-actions-left{ display:flex; gap:12px; justify-content:flex-start; }
+.row-actions-right{ display:flex; gap:12px; justify-content:flex-end; }
+
+/* tables actions */
+td.actions-cell{ display:flex; align-items:center; gap:12px; }
+td.actions-cell .spacer{ flex:1; }
+
+
+:root{
+  --control-h: 44px;
+  --form-max-w: 560px; /* align all controls to same width */
+}
+
+/* Make every admin form-row stacked and aligned */
+.card .form-row{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Labels always on top, left */
+.card .form-row > label{
+  display:block;
+  margin: 0 0 .35rem 0;
+  text-align: left !important;
+}
+
+/* Controls exact same width */
+.card .form-row > select,
+.card .form-row > input[type="text"],
+.card .form-row > input[type="url"],
+.card .form-row > input[type="date"],
+.card .form-row > input[type="file"],
+.card .form-row > textarea{
+  width: var(--form-max-w);
+  max-width: 100%;
+  height: var(--control-h);
+  box-sizing: border-box;
+}
+
+.card .form-row > textarea{
+  min-height: 320px; /* keep biography editor tall */
+  height: auto;
+}
+
+/* Action buttons under fields; keep consistent height and centered text */
+.card .form-row > button,
+.card .form-row .row-actions-left > button,
+.card .form-row .row-actions-right > button{
+  min-height: var(--control-h);
+  padding: .55rem 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Keep tables consistent width with controls */
+.card .table-wrap{
+  width: var(--form-max-w);
+  max-width: 100%;
+}
+
+/* Paintings upload row: keep button in same line when needed */
+#paintUploadBtn{ margin-top: .4rem; }
+
+/* Categories save button slight top margin to align visually */
+#saveSubBtn{ margin-top: .4rem; }
+
+.form-narrow{
+  width: var(--form-max-w, 560px);
+  max-width: 100%;
+}
+/* keep table full width of card */
+.card .table-wrap{
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Inputs/selects/files inside .form-narrow keep fixed width */
+.form-narrow .form-row > select,
+.form-narrow .form-row > input[type="text"],
+.form-narrow .form-row > input[type="url"],
+.form-narrow .form-row > input[type="date"],
+.form-narrow .form-row > input[type="file"]{
+  width: var(--form-max-w, 560px);
+  max-width: 100%;
+  height: var(--control-h, 44px);
+  box-sizing: border-box;
+}
+/* Buttons inside .form-narrow same height */
+.form-narrow .form-row > button{
+  min-height: var(--control-h, 44px);
+}
+
+/* Textareas are full width by default */
+.card .form-row > textarea{
+  width: 100% !important;
+  min-height: 320px;
+  box-sizing: border-box;
+}
+
+/* Tables are full width */
+.card .table-wrap{
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+:root{ --form-width: 560px; --control-h: 44px; }
+
+.admin-form{ max-width: var(--form-width); width: 100%; }
+
+.admin-form .control{
+  height: var(--control-h) !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.card textarea.control{
+  width: 100% !important;
+  min-height: 320px;
+  box-sizing: border-box;
+}
+
+.card .table-wrap{
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* === admin consolidated (v14) === */
+:root{ --control-h: 44px; --form-width: 560px; }
+
+/* Admin forms: narrow inputs */
+.admin-form{ max-width: var(--form-width); width:100%; }
+.admin-form .form-row > label{ display:block; margin:0 0 .35rem 0; text-align:left; }
+.admin-form .control{
+  width: 100% !important;
+  height: var(--control-h) !important;
+  box-sizing: border-box;
+}
+
+/* Textarea full width */
+.card textarea.control{
+  width: 100% !important;
+  min-height: 320px;
+  box-sizing: border-box;
+}
+
+/* Tables full width */
+.card .table-wrap{ width: 100% !important; max-width: 100% !important; }
+
+/* Spacing between rows */
+.form-row{ margin-bottom: 1rem; }
+
+.card .headline h2 {
+  color: #5a3f2a;
+  font-weight: bold;
+  letter-spacing: 0.2px;
+  line-height: 1.2;
+  margin: 0 0 1.1rem 0;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  display: inline-block;
+  position: relative;
+  margin-left: 0 !important;
+}
+
+.card .headline h2::after{
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  height: 3px;
+  width: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #ead7ba, #d7b98b 60%, #e8d2ae);
+  opacity: .9;
+}
+
+#managementMenu > h2 {
+  color: #5a3f2a;
+  font-weight: bold;
+  letter-spacing: 0.2px;
+  line-height: 1.2;
+  margin-top: 4rem;
+  margin-left: 2px;
+  margin-bottom: 1.1rem;
+  background: none;
+  border: none;
+  box-shadow: none;
+  position: relative;
+}
+
+#managementMenu > h2::after{
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  height: 3px;
+  width: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #ead7ba, #d7b98b 60%, #e8d2ae);
+  opacity: .9;
+}
+
+.management-card{
+  background: linear-gradient(180deg, #f6efe3 0%, #efe3d0 100%);
+  border: 1px solid #d6c3a1;
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 3px 0 rgba(106,78,54,0.20), 0 10px 22px rgba(0,0,0,0.06);
+  position: relative;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.management-card::before{
+  content:'';
+  position:absolute; left:0; top:0; bottom:0; width:6px;
+  border-radius:14px 0 0 14px;
+  background: linear-gradient(180deg, #7a5a3e, #6a4e36);
+  opacity:.95;
+  z-index: 2;
+}
+.management-card::after{
+  content:'';
+  position:absolute; inset: 0;
+  border-radius:14px; pointer-events:none;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
+  z-index: 1;
+  clip-path: inset(0 0 0 6px round 14px);
+}
+.management-option:hover .management-card,
+.management-option:focus-visible .management-card{
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 rgba(106,78,54,0.23), 0 14px 26px rgba(0,0,0,0.10);
+  border-color: #c8b38f;
+}
+.management-card h3{
+  margin: 0;
+  color: #5a3f2a;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.management-options-container > a + a { margin-top: 0; }
+
+/* ==== Compact admin form spacing ==== */
+.card .form-grid { row-gap: 0.5rem; }
+.card .form-row { margin-bottom: 0.5rem; }
+
+/* Soft divider for admin content */
+.soft-divider{
+  border: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(90,63,42,0.15), rgba(90,63,42,0.08) 50%, rgba(90,63,42,0.15));
+  margin: 1.1rem 0 1.1rem 0;
+  border-radius: 1px;
+}
+
+nav a.active {
+color: #e09f3e;
+}
+
+aside ul li a.active {
+color: #e09f3e;
+}
+
+figure{display:inline-block;}
+
+/* === Theming for cards & captions === */
+:root {
+  --card-bg: #fffdfa;
+  --card-shadow: 0 8px 18px rgba(0,0,0,0.08);
+  --accent: #d7682f;          /* warm orange */
+  --ink: #4b3a2d;             /* warm dark text */
+  --muted: #8a796a;
+  --chip-bg: #f5ede3;
+  --chip-border: #e2d6c8;
+}
+
+/* Admin delete button style tweak */
+#paintGallery figure .del {
+  background: linear-gradient(180deg, #e5735a, #c5533a);
+  color: #fff;
+  border: none;
+}
+
+/* Description list styling */
+.desc-list { display:flex; flex-direction:column; gap:10px; }
+.desc-row {
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  border-radius: 10px;
+  padding: 10px;
+}
+.desc-row .desc-label {
+  display:block;
+  font-size: .95rem;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.desc-row textarea.control {
+  background: #fffdf8;
+  border: 1px solid #e8dccd;
+  border-radius: 8px;
+  padding: 8px;
+  min-height: 80px;
+  color: var(--ink);
+}
+
+/* === Unified gallery aesthetics */
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.gallery figure {
+  flex: auto;
+  max-width: 340px;
+  margin: 0;
+  background: #fdf7f1;
+  border: 1px solid #eadfce;
+  border-radius: 14px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.gallery figure .media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 260px;            /* consistent thumbnail height */
+  background: #f3efe9;
+}
+
+.gallery figure .media img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;      /* Public + Admin = contain */
+  display: block;
+}
+
+.gallery figure figcaption {
+  margin: 0;
+  padding: 12px 14px 14px;
+  background: #f9f1e7;      /* soft beige for caption */
+  color: #5a4632;           /* warm brown text */
+  font-size: 0.98rem;
+  line-height: 1.35;
+  text-align: center;
+  border-top: 1px solid #e7d9c7;
+}
+
+/* Description list styling in admin */
+.desc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.desc-row {
+  background: #fbf6ee;
+  border: 1px solid #eadfce;
+  border-radius: 10px;
+  padding: 10px;
+}
+.desc-row .desc-head {
+  margin-bottom: 6px;
+  color: #5a4632;
+}
+.desc-row textarea.control {
+  width: 100%;
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* Admin delete overlay remains */
+#paintGallery figure { position: relative; }
+#paintGallery figure .del {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* --- Unify admin action button styles across sections --- */
+td.actions-cell .edit, td.actions-cell .danger.delete {
+  padding: 5px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s;
+}
+td.actions-cell .edit { background-color: #4b3e27; color: #fff; }
+td.actions-cell .danger.delete { background-color: #b23c17; color: #fff; }
+td.actions-cell .edit:hover, td.actions-cell .danger.delete:hover { opacity: .8; }
+
+
+/* PUBLIC : Exhibitions + Links styling  */
+.exhibitions-list{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: .75rem;
+}
+.exhibitions-list .exh-item{
+  border: 1px solid var(--border, #e8e1d5);
+  border-radius: 12px;
+  padding: .85rem 1rem;
+  background: #fffefb;
+  box-shadow: var(--shadow, 0 6px 18px rgba(0,0,0,.05));
+}
+.exh-header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: .25rem;
+}
+.exh-title{
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.badge{
+  display: inline-block;
+  font-size: .85rem;
+  padding: .2rem .5rem;
+  border-radius: 999px;
+  background: rgba(202,163,83,.16);
+  border: 1px solid rgba(202,163,83,.45);
+}
+.exh-meta{
+  display: flex;
+  gap: .6rem;
+  flex-wrap: wrap;
+  font-size: .92rem;
+  color: var(--muted, #6b665c);
+}
+.exh-desc{ margin-top: .4rem; }
+
+.links-list{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: .75rem;
+}
+.links-list .link-item{
+  border: 1px solid var(--border, #e8e1d5);
+  border-radius: 12px;
+  padding: .85rem 1rem;
+  background: #fffefb;
+  box-shadow: var(--shadow, 0 6px 18px rgba(0,0,0,.05));
+}
+.link-header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: .25rem;
+}
+.link-title{
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.link-host{
+  font-size: .92rem;
+  color: var(--muted, #6b665c);
+}
+
+.badge{
+  display: inline-block;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: .28rem .6rem;
+  border-radius: 999px;
+  background: #fff3cf;
+  border: 1px solid rgba(202,163,83,.7);
+  letter-spacing: .1px;
+}
+
+.card .prose p{ margin: .7rem 0; }
+.card .prose p + p{ margin-top: .9rem; }
+.card .prose ul{ margin: .6rem 0 .9rem 1.2rem; }
+.card .prose li{ margin: .28rem 0; }
+
+.card.bio-card{
+  max-width: 980px;        
+  margin-left: auto;
+  margin-right: auto;
+}
+.card.bio-card .prose{
+  max-width: 100%;
+}
