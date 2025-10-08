@@ -55,4 +55,12 @@ All list endpoints accept `?page=&limit=`. If omitted, full list is returned (le
 > Σημείωση: Το `server.js` πλέον κάνει export το `app` και αποφεύγει το `listen` όταν `NODE_ENV=test`, ώστε τα tests να τρέχουν χωρίς να ανοίγει port.
 
 
-> CI note: The workflow now uses `npm install` instead of `npm ci`. ESLint is pinned to v8.57.0 to support `.eslintrc.json`.
+### CI/Lint update
+- Migrated to **ESLint v9 flat config** (`backend/eslint.config.js`).
+- Commands:
+  ```bash
+  cd backend
+  npm ci   # or npm install
+  npm run lint
+  npm run format
+  ```
