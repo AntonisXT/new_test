@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const Exhibition = require('../models/exhibition');
@@ -7,17 +6,14 @@ const validate = require('../server/middleware/validate');
 const { pagination, objectId, idParam } = require('../server/validation/schemas');
 const paginate = require('../server/utils/paginate');
 
-// List (optionally filter by subcategory)
+// List (optionally filter by subcategory), smart paginate
 router.get('/', validate({ query: pagination.keys({ subcategory: objectId.optional() }) }), async (req, res) => {
   try {
     const filter = {};
     if (req.query.subcategory) filter.subcategory = req.query.subcategory;
-    const q = require('../models/exhibition').find(filter);
+    const q = Exhibition.find(filter);
     const result = await paginate(q, { page: req.query.page, limit: req.query.limit, sort: { createdAt: -1 } });
     res.json(result);
-  } catch (e) { res.status(500).json({ msg: e.message }); }
-});
-    res.json(items);
   } catch (e) {
     res.status(500).json({ msg: e.message });
   }
@@ -26,10 +22,8 @@ router.get('/', validate({ query: pagination.keys({ subcategory: objectId.option
 // Create
 router.post('/', auth, async (req, res) => {
   try {
-    const { title, location, date, subcategory } = req.body;
-    if (!title || !subcategory) return res.status(400).json({ msg: 'title και subcategory είναι υποχρεωτικά' });
-    const doc = await Exhibition.create({ title, location, date, subcategory });
-    res.json(doc);
+    const created = await Exhibition.create(req.body);
+    res.status(201).json(created);
   } catch (e) {
     res.status(400).json({ msg: e.message });
   }
@@ -38,8 +32,8 @@ router.post('/', auth, async (req, res) => {
 // Update
 router.put('/:id', auth, validate({ params: idParam }), async (req, res) => {
   try {
-    const doc = await Exhibition.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(doc);
+    const updated = await Exhibition.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updated);
   } catch (e) {
     res.status(400).json({ msg: e.message });
   }

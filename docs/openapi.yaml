@@ -36,3 +36,6 @@ paths:
       summary: Create painting
       responses:
         '201': { description: Created }
+
+
+# x-smart-pagination: Αν δεν δοθούν page/limit, ο server εφαρμόζει paginate μόνο όταν total>12, αλλιώς επιστρέφει όλα.

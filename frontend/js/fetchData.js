@@ -161,11 +161,11 @@ export async function getBiography(subcategoryId) {
   return await res.json();
 }
 
-export async function saveBiography(subcategoryId, contentHtml) {
+export async function saveBiography(subcategoryId, payload) {
   const res = await fetchWithAuth(`/api/biography/${subcategoryId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contentHtml })
+    body: JSON.stringify(payload)
   });
   if (!res.ok) throw new Error('Failed to save biography');
   return await res.json();
