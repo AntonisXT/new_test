@@ -1312,6 +1312,7 @@ async function renderLinksAdmin() {
   saveBtn.addEventListener('click', async () => {
     let url = urlEl.value.trim();
     if (url && !/^https?:\/\//i.test(url)) url = 'https://' + url;
+    try { url = new URL(url).toString(); } catch (e) { url = encodeURI(url); }
     const payload = { title: titleEl.value.trim(), url, subcategory: subSel.value };
     if (!payload.url) return alert('Το URL είναι υποχρεωτικό.');
     if (editId) await updateLink(editId, payload); else await addLink(payload);
