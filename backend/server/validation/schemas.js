@@ -22,8 +22,7 @@ const subcategoryBody = Joi.object({
 });
 
 const biographyBody = Joi.object({
-  subcategory: objectId.required(),
-  content: Joi.string().allow('').max(100000),
+  contentHtml: Joi.string().allow('').required(),
 });
 
 const linkItemBody = Joi.object({

@@ -19,18 +19,16 @@ router.get('/:subcategoryId', async (req, res) => {
 router.post('/:subcategoryId', auth, validate({ params: subcategoryParam }), async (req, res) => {
   try {
     const { contentHtml } = req.body || {};
-    if (typeof contentHtml !== 'string') {
-      return res.status(400).json({ msg: 'contentHtml must be a string' });
-    }
+    if (typeof contentHtml !== 'string') return res.status(400).json({ msg: 'contentHtml must be a string' });
     const update = { contentHtml, updatedAt: new Date() };
-    const doc = await Biography.findOneAndUpdate(
+    const doc = await require('../models/biography').findOneAndUpdate(
       { subcategory: req.params.subcategoryId },
       { $set: update, $setOnInsert: { subcategory: req.params.subcategoryId } },
       { new: true, upsert: true }
     );
     res.json(doc);
-  } catch (e) {
-    res.status(400).json({ msg: e.message });
+  } catch (e) { res.status(400).json({ msg: e.message }); }
+});
   }
 });
 

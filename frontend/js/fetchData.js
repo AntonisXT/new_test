@@ -22,7 +22,7 @@ export async function addExhibition(payload) {
   const res = await fetchWithAuth('/api/exhibitions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contentHtml })
+    body: JSON.stringify(payload)
   });
   if (!res.ok) throw new Error('Failed to add exhibition');
   return await res.json();
@@ -32,7 +32,7 @@ export async function updateExhibition(id, payload) {
   const res = await fetchWithAuth(`/api/exhibitions/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contentHtml })
+    body: JSON.stringify(payload)
   });
   if (!res.ok) throw new Error('Failed to update exhibition');
   return await res.json();
@@ -65,7 +65,7 @@ export async function addLink(payload) {
   const res = await fetchWithAuth('/api/links', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contentHtml })
+    body: JSON.stringify(payload)
   });
   if (!res.ok) throw new Error('Failed to add link');
   return await res.json();
@@ -75,7 +75,7 @@ export async function updateLink(id, payload) {
   const res = await fetchWithAuth(`/api/links/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contentHtml })
+    body: JSON.stringify(payload)
   });
   if (!res.ok) throw new Error('Failed to update link');
   return await res.json();
@@ -98,7 +98,7 @@ export async function addCategory(payload) {
   const res = await fetchWithAuth('/api/categories', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contentHtml })
+    body: JSON.stringify(payload)
   });
   if (!res.ok) throw new Error('Failed to add category');
   return await res.json();
@@ -108,7 +108,7 @@ export async function updateCategory(id, payload) {
   const res = await fetchWithAuth(`/api/categories/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contentHtml })
+    body: JSON.stringify(payload)
   });
   if (!res.ok) throw new Error('Failed to update category');
   return await res.json();
@@ -132,7 +132,7 @@ export async function addSubcategory(categoryId, payload) {
   const res = await fetchWithAuth(`/api/categories/${categoryId}/subcategories`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contentHtml })
+    body: JSON.stringify(payload)
   });
   if (!res.ok) throw new Error('Failed to add subcategory');
   return await res.json();
@@ -142,7 +142,7 @@ export async function updateSubcategory(id, payload) {
   const res = await fetchWithAuth(`/api/categories/subcategories/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contentHtml })
+    body: JSON.stringify(payload)
   });
   if (!res.ok) throw new Error('Failed to update subcategory');
   return await res.json();

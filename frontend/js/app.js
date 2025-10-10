@@ -10,10 +10,6 @@ import {
 } from './fetchData.js';
 
 
-// -- Helper: normalize paged responses --
-function asList(resp){ return Array.isArray(resp) ? resp : (resp && Array.isArray(resp.items) ? resp.items : []); }
-
-
 // --- Quick modal to create a subcategory when none exists ---
 function showQuickCreateSubModal(parentCatId, onCreated) {
   // Overlay
@@ -570,8 +566,7 @@ async function renderPaintingsPublic(token) {
   const sub = await resolveSubcategory('paintings', token);
   const content = document.getElementById('content');
   if (!sub) { content.innerHTML = '<div class="card"><p>Δεν βρέθηκε η ενότητα.</p></div>'; return; }
-  const resp = await listPaintings(sub._id);
-  const items = asList(resp);
+  const items = await listPaintings(sub._id);
   content.innerHTML = `<div class="card"><div class="headline"><h2>${sub.name}</h2></div><div id="gallery" class="gallery"></div></div>`;
   const gal = document.getElementById('gallery');
   gal.innerHTML = items.length
@@ -585,45 +580,19 @@ async function renderPaintingsPublic(token) {
         </figcaption>
       </figure>`).join('')
     : '<p>Δεν υπάρχουν εικόνες ακόμη.</p>';
-  // -- Load more for public gallery --
-  (async () => {
-    let pg = (resp.page ?? 0);
-    const L = 12;
-    const wrap = document.createElement('div');
-    wrap.style.marginTop = '12px';
-    if (resp && resp.hasMore) {
-      const more = document.createElement('button');
-      more.className = 'button';
-      more.textContent = 'Φορτώστε περισσότερα';
-      wrap.appendChild(more);
-      gal.parentElement.appendChild(wrap);
-      more.addEventListener('click', async () => {
-        const nxt = await listPaintings(sub._id, pg + 1, L);
-        const moreItems = asList(nxt);
-        gal.insertAdjacentHTML('beforeend', moreItems.map(i => `
-          <figure>
-            <div class="media">
-              <img src="${i.dataUrl}" alt="${(i.description||i.title||'').replace(/`/g,'´')}" loading="lazy" />
-            </div>
-            <figcaption title="${(i.description||i.title||'').replace(/`/g,'´')}">
-              ${i.description||i.title||""}
-            </figcaption>
-          </figure>`).join(''));
-        pg = nxt.page ?? (pg + 1);
-        if (!nxt.hasMore) wrap.remove();
-      });
-    }
-  })();
-
 }
 
 
 async function renderExhibitionsPublic(token) {
   const sub = await resolveSubcategory('exhibitions', token);
   const content = document.getElementById('content');
-  const subId = sub && sub._id ? sub._id : undefined;
-  const exResp = await fetchExhibitions(subId);
-  const filtered = asList(exResp);
+  const list = await fetchExhibitions();
+  let filtered = list;
+  if (sub && sub._id) {
+    filtered = list.filter(x => (x.subcategory === sub._id) || (x.subcategoryId === sub._id));
+  } else if (token) {
+    filtered = list.filter(x => (x.category === token) || (x.subcategoryName === token));
+  }
   content.innerHTML = `<div class="card"><div class="headline"><h2>${sub ? sub.name : 'Εκθέσεις'}</h2></div><ul class="exhibitions-list"></ul></div>`;
   const ul = document.querySelector('.exhibitions-list');
   if (!filtered.length) { ul.innerHTML = '<li>Δεν υπάρχουν εγγραφές ακόμη.</li>'; return; }
@@ -654,9 +623,13 @@ async function renderExhibitionsPublic(token) {
 async function renderLinksPublic(token) {
   const sub = await resolveSubcategory('links', token);
   const content = document.getElementById('content');
-  const subId = sub && sub._id ? sub._id : undefined;
-  const lnResp = await fetchLinks(subId);
-  const filtered = asList(lnResp);
+  const list = await fetchLinks();
+  let filtered = list;
+  if (sub && sub._id) {
+    filtered = list.filter(x => (x.subcategory === sub._id) || (x.subcategoryId === sub._id));
+  } else if (token) {
+    filtered = list.filter(x => (x.category === token) || (x.subcategoryName === token));
+  }
   content.innerHTML = `<div class="card"><div class="headline"><h2>${sub ? sub.name : 'Σύνδεσμοι'}</h2></div><ul class="links-list"></ul></div>`;
   const ul = document.querySelector('.links-list');
   if (!filtered.length) { ul.innerHTML = '<li>Δεν υπάρχουν σύνδεσμοι ακόμη.</li>'; return; }
@@ -938,8 +911,7 @@ async function renderPaintingsAdmin() {
   setPaintEnabled(!!subSel.value);
 subSel.addEventListener('change', () => { setPaintEnabled(!!subSel.value); });
   async function loadGallery(){ if (!subSel || !subSel.value) { gal.innerHTML = '<p>Δεν υπάρχουν υποκατηγορίες.</p>'; return; }
-    const resp = await listPaintings(subSel.value);
-    const items = asList(resp);
+    const items = await listPaintings(subSel.value);
     gal.innerHTML = items.length ? items.map(i => `
       <figure data-id="${i._id}">
         <button class="danger del" title="Διαγραφή">Διαγραφή</button>
@@ -977,39 +949,6 @@ subSel.addEventListener('change', () => { setPaintEnabled(!!subSel.value); });
       await loadGallery();
     }
   });
-  // -- Load more for admin gallery --
-  (async () => {
-    const first = await listPaintings(subSel.value);
-    let pg = (first.page ?? 0);
-    const L = 12;
-    const wrap = document.createElement('div');
-    wrap.style.marginTop = '12px';
-    if (first && first.hasMore) {
-      const more = document.createElement('button');
-      more.className = 'button';
-      more.textContent = 'Φορτώστε περισσότερα';
-      wrap.appendChild(more);
-      gal.parentElement.appendChild(wrap);
-      more.addEventListener('click', async () => {
-        const nxt = await listPaintings(subSel.value, pg + 1, L);
-        const moreItems = asList(nxt);
-        gal.insertAdjacentHTML('beforeend', moreItems.map(i => `
-          <figure data-id="${i._id}">
-            <button class="danger del" title="Διαγραφή">Διαγραφή</button>
-            <div class="media">
-              <img src="${i.dataUrl}" alt="${i.description||i.title||''}" />
-            </div>
-            <figcaption title="${i.description||i.title||''}">
-              ${i.description||i.title||''}
-              <button class="danger del" style="float:right;margin-left:.5rem;">Διαγραφή</button>
-            </figcaption>
-          </figure>`).join(''));
-        pg = nxt.page ?? (pg + 1);
-        if (!nxt.hasMore) wrap.remove();
-      });
-    }
-  })();
-
 }
 
 async function renderExhibitionsAdmin() {
@@ -1094,9 +1033,9 @@ async function renderExhibitionsAdmin() {
   setExhEnabled(!!subSel.value);
 
   async function loadExh(){ if (!subSel || !subSel.value) { tbody.innerHTML = `<tr><td colspan="5">Δεν υπάρχουν υποκατηγορίες.</td></tr>`; return; }
+    const all = await fetchExhibitions();
     const subId = subSel.value;
-    const exResp = await fetchExhibitions(subId);
-    const list = asList(exResp);
+    const list = all.filter(e => (e.subcategory === subId) || (e.subcategoryId === subId));
     if (!list.length) { tbody.innerHTML = `<tr><td colspan="4">Δεν υπάρχουν εκθέσεις σε αυτή την κατηγορία.</td></tr>`; return; }
     tbody.innerHTML = list.map(e => `
       <tr data-id="${e._id}">
@@ -1110,40 +1049,6 @@ async function renderExhibitionsAdmin() {
         </td>
       </tr>
     `).join('');
-    // -- Load more for exhibitions --
-    (function(){
-      let pg = (exResp.page ?? 0);
-      const L = 12;
-      const table = tbody.closest('table');
-      const host = table ? table.parentElement : tbody.parentElement;
-      const wrap = document.createElement('div');
-      wrap.style.marginTop = '12px';
-      if (exResp && exResp.hasMore) {
-        const more = document.createElement('button');
-        more.className = 'button';
-        more.textContent = 'Φορτώστε περισσότερα';
-        wrap.appendChild(more);
-        host.appendChild(wrap);
-        more.addEventListener('click', async () => {
-          const nx = await fetchExhibitions(subId, pg + 1, L);
-          const extra = asList(nx);
-          tbody.insertAdjacentHTML('beforeend', extra.map(e => `
-            <tr data-id="${e._id}">
-              <td>${e.title||''}</td>
-              <td>${e.date||''}</td>
-              <td>${e.location||''}</td>
-              <td class="actions-cell">
-                <button class="edit">Επεξεργασία</button>
-                <span class="spacer"></span>
-                <button class="danger delete">Διαγραφή</button>
-              </td>
-            </tr>`).join(''));
-          pg = nx.page ?? (pg + 1);
-          if (!nx.hasMore) wrap.remove();
-        });
-      }
-    })();
-
   }
   subSel.addEventListener('change', () => { setExhEnabled(!!subSel.value); });
   subSel.addEventListener('change', loadExh);
@@ -1254,9 +1159,9 @@ async function renderLinksAdmin() {
   setLinkEnabled(!!subSel.value);
 
   async function loadList(){ if (!subSel || !subSel.value) { tbody.innerHTML = `<tr><td colspan="3">Δεν υπάρχουν υποκατηγορίες.</td></tr>`; return; }
+    const all = await fetchLinks();
     const subId = subSel.value;
-    const lnResp = await fetchLinks(subId);
-    const list = asList(lnResp);
+    const list = all.filter(l => (l.subcategory === subId) || (l.subcategoryId === subId));
     if (!list.length){ tbody.innerHTML = `<tr><td colspan="3">Δεν υπάρχουν σύνδεσμοι σε αυτή την κατηγορία.</td></tr>`; return; }
     tbody.innerHTML = list.map(l => `
       <tr data-id="${l._id}">
@@ -1269,39 +1174,6 @@ async function renderLinksAdmin() {
         </td>
       </tr>
     `).join('');
-    // -- Load more for links --
-    (function(){
-      let pg = (lnResp.page ?? 0);
-      const L = 12;
-      const table = tbody.closest('table');
-      const host = table ? table.parentElement : tbody.parentElement;
-      const wrap = document.createElement('div');
-      wrap.style.marginTop = '12px';
-      if (lnResp && lnResp.hasMore) {
-        const more = document.createElement('button');
-        more.className = 'button';
-        more.textContent = 'Φορτώστε περισσότερα';
-        wrap.appendChild(more);
-        host.appendChild(wrap);
-        more.addEventListener('click', async () => {
-          const nx = await fetchLinks(subId, pg + 1, L);
-          const extra = asList(nx);
-          tbody.insertAdjacentHTML('beforeend', extra.map(l => `
-            <tr data-id="${l._id}">
-              <td>${l.title || ''}</td>
-              <td><a href="${l.url}" target="_blank" rel="noopener">${l.url}</a></td>
-              <td class="actions-cell">
-                <button class="edit">Επεξεργασία</button>
-                <span class="spacer"></span>
-                <button class="danger delete">Διαγραφή</button>
-              </td>
-            </tr>`).join(''));
-          pg = nx.page ?? (pg + 1);
-          if (!nx.hasMore) wrap.remove();
-        });
-      }
-    })();
-
   }
   subSel.addEventListener('change', () => { setLinkEnabled(!!subSel.value); });
   subSel.addEventListener('change', loadList);
