@@ -913,7 +913,7 @@ async function renderPaintingsAdmin() {
         if (created && created._id) {
           subSel.innerHTML = `<option value="${created._id}">${created.name}</option>`;
           subSel.value = created._id;
-          const ev = new Event('change'); subSel.dispatchEvent(ev); if (typeof loadGallery==='function') await loadGallery();
+          const ev = new Event('change'); subSel.dispatchEvent(ev); if (typeof loadGallery==='function') await loadGallery(); await buildLoadMore();
         }
       });
     }
@@ -937,9 +937,10 @@ async function renderPaintingsAdmin() {
   function setPaintEnabled(on){ if(filesEl) filesEl.disabled = !on; if(uploadBtn) uploadBtn.disabled = !on; }
   setPaintEnabled(!!subSel.value);
 subSel.addEventListener('change', () => { setPaintEnabled(!!subSel.value); });
-  async function loadGallery(){ if (!subSel || !subSel.value) { gal.innerHTML = '<p>Δεν υπάρχουν υποκατηγορίες.</p>'; return; }
-    const resp = await listPaintings(subSel.value);
-    const items = asList(resp);
+  async function loadGallery(){ 
+    if (!subSel || !subSel.value) { gal.innerHTML = '<p>Δεν υπάρχουν υποκατηγορίες.</p>'; return; }
+    const first = await listPaintings(subSel.value);
+    const items = asList(first);
     gal.innerHTML = items.length ? items.map(i => `
       <figure data-id="${i._id}">
         <button class="danger del" title="Διαγραφή">Διαγραφή</button>
@@ -951,11 +952,14 @@ subSel.addEventListener('change', () => { setPaintEnabled(!!subSel.value); });
           <button class="danger del" style="float:right;margin-left:.5rem;">Διαγραφή</button>
         </figcaption>
       </figure>`).join('') : '<p>Δεν υπάρχουν εικόνες.</p>';
+    // set current page on the gallery for persistence
+    gal.dataset.page = String(first.page ?? 0);
+    gal.dataset.limit = "12";
+    // build/refresh load more UI
+    await buildLoadMore();
   }
   subSel.addEventListener('change', ()=>{ setPaintEnabled(!!subSel.value); loadGallery(); });
-// ensure load more is visible after change too
-(async ()=>{ try { const _ = await listPaintings(subSel.value); } catch{} })();
-  if (subSel.value) await loadGallery();
+  if (subSel.value) await loadGallery(); await buildLoadMore();
 
   const _uploadBtnEl = document.getElementById('paintUploadBtn');
   if (_uploadBtnEl) _uploadBtnEl.addEventListener('click', async () => { if (typeof isLoggedIn==='function' && !isLoggedIn()) { alert('Απαιτείται σύνδεση.'); return; } if (!subSel.value) return alert('Δημιούργησε υποκατηγορία πρώτα.');
@@ -967,7 +971,7 @@ subSel.addEventListener('change', () => { setPaintEnabled(!!subSel.value); });
     document.getElementById('paintFiles').value = '';
     const _descListEl = document.getElementById('paintDescList'); if (_descListEl) _descListEl.innerHTML = '';
     const _descRowEl = document.getElementById('paintDescRow'); if (_descRowEl) _descRowEl.style.display = 'none';
-    await loadGallery();
+    await loadGallery(); await buildLoadMore();
   });
 
   if (gal) gal.addEventListener('click', async (e) => {
@@ -976,43 +980,59 @@ subSel.addEventListener('change', () => { setPaintEnabled(!!subSel.value); });
     if (e.target.classList.contains('del')) {
       if (!confirm('Διαγραφή εικόνας;')) return;
       await deletePainting(fig.getAttribute('data-id'));
-      await loadGallery();
+      await loadGallery(); await buildLoadMore();
     }
   });
-  // -- Load more for admin gallery --
-  (async () => {
-    const first = await listPaintings(subSel.value);
-    let pg = (first.page ?? 0);
-    const L = 12;
+  
+
+  async function buildLoadMore(){
+    const gal = document.getElementById('paintGallery');
+    if (!gal || !subSel || !subSel.value) return;
+    // remove any previous wrap
+    const oldWrap = document.getElementById('paintLoadMoreWrap');
+    if (oldWrap && oldWrap.parentElement) oldWrap.parentElement.removeChild(oldWrap);
+    // check current page state
+    let pg = parseInt(gal.dataset.page || '0', 10);
+    const L = parseInt(gal.dataset.limit || '12', 10);
+    // ask server if there's more after current page
+    const probe = await listPaintings(subSel.value, pg, L);
+    if (!probe || !probe.hasMore) return;
+    // create UI
     const wrap = document.createElement('div');
+    wrap.id = 'paintLoadMoreWrap';
     wrap.style.marginTop = '12px';
-    if (first && first.hasMore) {
-      const more = document.createElement('button');
-      more.className = 'button';
-      more.textContent = 'Φορτώστε περισσότερα';
-      wrap.appendChild(more);
-      (gal.parentElement && gal.parentElement.parentElement ? gal.parentElement.parentElement : gal.parentElement).appendChild(wrap);
-      more.addEventListener('click', async () => {
-        const nxt = await listPaintings(subSel.value, pg + 1, L);
-        const moreItems = asList(nxt);
-        gal.insertAdjacentHTML('beforeend', moreItems.map(i => `
-          <figure data-id="${i._id}">
-            <button class="danger del" title="Διαγραφή">Διαγραφή</button>
-            <div class="media">
-              <img src="${i.dataUrl}" alt="${i.description||i.title||''}" />
-            </div>
-            <figcaption title="${i.description||i.title||''}">
-              ${i.description||i.title||''}
-              <button class="danger del" style="float:right;margin-left:.5rem;">Διαγραφή</button>
-            </figcaption>
-          </figure>`).join(''));
-        pg = nxt.page ?? (pg + 1);
-        if (!nxt.hasMore) wrap.remove();
-      });
-    }
-  })();
+    const more = document.createElement('button');
+    more.className = 'button';
+    more.textContent = 'Φορτώστε περισσότερα';
+    wrap.appendChild(more);
+    // append under the form-row that contains the gallery
+    const host = gal.parentElement && gal.parentElement.parentElement ? gal.parentElement.parentElement : gal.parentElement || gal;
+    host.appendChild(wrap);
+    more.addEventListener('click', async () => {
+      const nxt = await listPaintings(subSel.value, pg + 1, L);
+      const extra = asList(nxt);
+      gal.insertAdjacentHTML('beforeend', extra.map(i => `
+        <figure data-id="${i._id}">
+          <button class="danger del" title="Διαγραφή">Διαγραφή</button>
+          <div class="media">
+            <img src="${i.dataUrl}" alt="${i.description||i.title||''}" />
+          </div>
+          <figcaption title="${i.description||i.title||''}">
+            ${i.description||i.title||''}
+            <button class="danger del" style="float:right;margin-left:.5rem;">Διαγραφή</button>
+          </figcaption>
+        </figure>`).join(''));
+      // update page & rebuild or remove
+      pg = nxt.page ?? (pg + 1);
+      gal.dataset.page = String(pg);
+      if (!nxt.hasMore) {
+        wrap.remove();
+      }
+    });
+  }
 
 }
+
 
 async function renderExhibitionsAdmin() {
   const content = document.getElementById('content');
