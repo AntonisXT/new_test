@@ -590,11 +590,12 @@ async function renderPaintingsPublic(token) {
     let pg = (resp.page ?? 0);
     const L = 12;
     const wrap = document.createElement('div');
+    wrap.className = 'gallery-loadmore';
     wrap.style.marginTop = '12px';
     if (resp && resp.hasMore) {
       const more = document.createElement('button');
-      more.className = 'button';
-      more.textContent = 'Εμφάνιση περισσότερων';
+      more.className = 'button admin-button';
+      more.textContent = 'Φορτώστε περισσότερα';
       wrap.appendChild(more);
       gal.parentElement.appendChild(wrap);
       more.addEventListener('click', async () => {
@@ -1000,10 +1001,11 @@ subSel.addEventListener('change', () => { setPaintEnabled(!!subSel.value); });
     // create UI
     const wrap = document.createElement('div');
     wrap.id = 'paintLoadMoreWrap';
+    wrap.className = 'gallery-loadmore';
     wrap.style.marginTop = '12px';
     const more = document.createElement('button');
-    more.className = 'button';
-    more.textContent = 'Εμφάνιση περισσότερων';
+    more.className = 'button admin-button';
+    more.textContent = 'Φορτώστε περισσότερα';
     wrap.appendChild(more);
     // append under the form-row that contains the gallery
     const host = gal.parentElement && gal.parentElement.parentElement ? gal.parentElement.parentElement : gal.parentElement || gal;
@@ -1139,10 +1141,11 @@ async function renderExhibitionsAdmin() {
       const table = tbody.closest('table');
       const host = table ? table.parentElement : tbody.parentElement;
       const wrap = document.createElement('div');
+      wrap.className = 'gallery-loadmore';
       wrap.style.marginTop = '12px';
       if (exResp && exResp.hasMore) {
         const more = document.createElement('button');
-        more.className = 'button';
+        more.className = 'button admin-button';
         more.textContent = 'Φορτώστε περισσότερα';
         wrap.appendChild(more);
         host.appendChild(wrap);
@@ -1301,7 +1304,7 @@ async function renderLinksAdmin() {
       wrap.style.marginTop = '12px';
       if (lnResp && lnResp.hasMore) {
         const more = document.createElement('button');
-        more.className = 'button';
+        more.className = 'button admin-button';
         more.textContent = 'Φορτώστε περισσότερα';
         wrap.appendChild(more);
         host.appendChild(wrap);

@@ -1236,19 +1236,16 @@ td.actions-cell .edit:hover, td.actions-cell .danger.delete:hover { opacity: .8;
 }
 
 
-/* === Unified style for 'Εμφάνιση περισσότερων' buttons === */
-#paintLoadMoreWrap .button,
-.gallery-wrap .button {
-  background-color: #d6b37d !important; /* same gold-beige as 'Αποθήκευση' */
+/* Consistent gold-beige style for 'Εμφάνιση περισσότερων' buttons */
+.gallery-loadmore .button {
+  background-color: #d6b37d !important;
   color: #3b2d1f !important;
   border: none !important;
   font-weight: bold;
   border-radius: 6px;
   padding: 8px 20px;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: background-color 0.2s ease;
 }
-#paintLoadMoreWrap .button:hover,
-.gallery-wrap .button:hover {
+.gallery-loadmore .button:hover {
   background-color: #e0c08b !important;
-  transform: translateY(-1px);
 }
