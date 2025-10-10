@@ -869,6 +869,7 @@ subSel.addEventListener('change', () => { setBioEnabled(!!subSel.value); });
 
 async function renderPaintingsAdmin() {
   const content = document.getElementById('content');
+  if (!content) return;
   content.innerHTML = `<div class="card">
     <div class="headline"><h2>Διαχείριση Πινάκων</h2></div>
 
@@ -1014,6 +1015,7 @@ subSel.addEventListener('change', () => { setPaintEnabled(!!subSel.value); });
 
 async function renderExhibitionsAdmin() {
   const content = document.getElementById('content');
+  if (!content) return;
   content.innerHTML = `<div class="card">
     <div class="headline"><h2>Διαχείριση Εκθέσεων</h2></div>
 
