@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const LinkItem = require('../models/linkItem');
@@ -7,7 +6,7 @@ const validate = require('../server/middleware/validate');
 const { pagination, objectId, idParam, linkItemBody } = require('../server/validation/schemas');
 const paginate = require('../server/utils/paginate');
 
-// List (optionally filter by subcategory)
+// List (optionally filter by subcategory), smart paginate
 router.get('/', validate({ query: pagination.keys({ subcategory: objectId.optional() }) }), async (req, res) => {
   try {
     const filter = {};
@@ -15,9 +14,6 @@ router.get('/', validate({ query: pagination.keys({ subcategory: objectId.option
     const q = LinkItem.find(filter);
     const result = await paginate(q, { page: req.query.page, limit: req.query.limit, sort: { createdAt: -1 } });
     res.json(result);
-  } catch (e) { res.status(500).json({ msg: e.message }); }
-});
-    res.json(items);
   } catch (e) {
     res.status(500).json({ msg: e.message });
   }
@@ -26,10 +22,8 @@ router.get('/', validate({ query: pagination.keys({ subcategory: objectId.option
 // Create
 router.post('/', auth, validate({ body: linkItemBody }), async (req, res) => {
   try {
-    const { title, url, subcategory } = req.body;
-    if (!url || !subcategory) return res.status(400).json({ msg: 'url και subcategory είναι υποχρεωτικά' });
-    const doc = await LinkItem.create({ title, url, subcategory });
-    res.json(doc);
+    const created = await LinkItem.create(req.body);
+    res.status(201).json(created);
   } catch (e) {
     res.status(400).json({ msg: e.message });
   }
@@ -38,8 +32,8 @@ router.post('/', auth, validate({ body: linkItemBody }), async (req, res) => {
 // Update
 router.put('/:id', auth, validate({ params: idParam, body: linkItemBody.fork(['url'], s => s.optional()) }), async (req, res) => {
   try {
-    const doc = await LinkItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(doc);
+    const updated = await LinkItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updated);
   } catch (e) {
     res.status(400).json({ msg: e.message });
   }
