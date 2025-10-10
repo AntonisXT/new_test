@@ -1,97 +1,50 @@
 const API_URL = "";
 import { fetchWithAuth } from './auth.js';
 
-
+/* ===================== Exhibitions ===================== */
 export async function fetchExhibitions(subcategoryId, page, limit) {
   try {
     const qs = new URLSearchParams();
     if (subcategoryId) qs.set('subcategory', subcategoryId);
     if (page !== undefined) qs.set('page', page);
     if (limit !== undefined) qs.set('limit', limit);
-    const response = await fetch(`/api/exhibitions${qs.toString() ? `?${qs}` : ''}`);
-    if (!response.ok) throw new Error('Network response was not ok');
-    const data = await response.json();
-    // Back-compat: if server returned array, wrap it; else return as-is
-    if (Array.isArray(data)) return { items: data, total: data.length, page: 0, pages: 1, hasMore: false };
-    return data;
-  } catch (error) {
-    console.error('Error:', error);
-    throw error;
-  }
-}
-    const exhibitions = await response.json();
-    return exhibitions;
-  } catch (error) {
-    console.error('Error:', error);
-    throw error;
+    const res = await fetch(`/api/exhibitions${qs.toString() ? `?${qs}` : ''}`);
+    if (!res.ok) throw new Error('Failed to fetch exhibitions');
+    const data = await res.json();
+    return Array.isArray(data) ? { items: data, total: data.length, page: 0, pages: 1, hasMore: false } : data;
+  } catch (e) {
+    console.error('Error fetching exhibitions:', e);
+    throw e;
   }
 }
 
-export async function addExhibition(exhibition) {
-  try {
-    const response = await fetchWithAuth(`/api/exhibitions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(exhibition),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.msg || 'Failed to add exhibition');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error in addExhibition:', error);
-    throw error;
-  }
+export async function addExhibition(payload) {
+  const res = await fetchWithAuth('/api/exhibitions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('Failed to add exhibition');
+  return await res.json();
 }
 
-
-export async function updateExhibition(id, exhibition) {
-  try {
-    const response = await fetchWithAuth(`/api/exhibitions/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(exhibition),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.msg || 'Failed to update exhibition');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error in updateExhibition:', error);
-    throw error;
-  }
+export async function updateExhibition(id, payload) {
+  const res = await fetchWithAuth(`/api/exhibitions/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('Failed to update exhibition');
+  return await res.json();
 }
 
 export async function deleteExhibition(id) {
-  try {
-    const response = await fetchWithAuth(`/api/exhibitions/${id}`, {
-      method: 'DELETE',
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.msg || 'Failed to delete exhibition');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error in deleteExhibition:', error);
-    throw error;
-  }
+  const res = await fetchWithAuth(`/api/exhibitions/${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error('Failed to delete exhibition');
+  return await res.json();
 }
 
-// Σύνδεσμοι
-
+/* ===================== Links ===================== */
 export async function fetchLinks(subcategoryId, page, limit) {
   try {
     const qs = new URLSearchParams();
@@ -101,159 +54,48 @@ export async function fetchLinks(subcategoryId, page, limit) {
     const res = await fetch(`/api/links${qs.toString() ? `?${qs}` : ''}`);
     if (!res.ok) throw new Error('Failed to fetch links');
     const data = await res.json();
-    if (Array.isArray(data)) return { items: data, total: data.length, page: 0, pages: 1, hasMore: false };
-    return data;
+    return Array.isArray(data) ? { items: data, total: data.length, page: 0, pages: 1, hasMore: false } : data;
   } catch (e) {
-    console.error(e);
+    console.error('Error fetching links:', e);
     throw e;
   }
 }
-    return await response.json();
-  } catch (error) {
-    console.error('Error:', error);
-    throw error;
-  }
-}
 
-export async function addLink(link) {
-  const response = await fetchWithAuth(`/api/links`, {
+export async function addLink(payload) {
+  const res = await fetchWithAuth('/api/links', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(link),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
   });
-  return response.json();
+  if (!res.ok) throw new Error('Failed to add link');
+  return await res.json();
 }
 
-export async function updateLink(id, link) {
-  const response = await fetchWithAuth(`/api/links/${id}`, {
+export async function updateLink(id, payload) {
+  const res = await fetchWithAuth(`/api/links/${id}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(link),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
   });
-  return response.json();
+  if (!res.ok) throw new Error('Failed to update link');
+  return await res.json();
 }
 
 export async function deleteLink(id) {
-  try {
-    const response = await fetchWithAuth(`/api/links/${id}`, {
-      method: 'DELETE',
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.msg || 'Failed to delete link');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error in deleteLink:', error);
-    throw error;
-  }
+  const res = await fetchWithAuth(`/api/links/${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error('Failed to delete link');
+  return await res.json();
 }
 
-
-// --- New API helpers for Categories/Subcategories/Biography/Paintings ---
+/* ===================== Categories ===================== */
 export async function fetchCategories() {
   const res = await fetch('/api/categories');
   if (!res.ok) throw new Error('Failed to fetch categories');
   return await res.json();
 }
 
-export async function seedDefaultCategories() {
-  const res = await fetchWithAuth(`/api/categories/seed-defaults`, { method: 'POST' });
-  if (!res.ok) throw new Error('Failed to seed defaults');
-  return await res.json();
-}
-
-export async function fetchSubcategories(catId) {
-  const res = await fetch(`/api/categories/${encodeURIComponent(catId)}/subcategories`);
-  if (!res.ok) throw new Error('Failed to fetch subcategories');
-  return await res.json();
-}
-
-export async function addSubcategory(catId, payload) {
-  const res = await fetchWithAuth(`/api/categories/${encodeURIComponent(catId)}/subcategories`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  if (!res.ok) throw new Error('Failed to add subcategory');
-  return await res.json();
-}
-
-export async function updateSubcategory(subId, payload) {
-  const res = await fetchWithAuth(`/api/categories/subcategories/${subId}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  if (!res.ok) throw new Error('Failed to update subcategory');
-  return await res.json();
-}
-
-export async function deleteSubcategory(subId) {
-  const res = await fetchWithAuth(`/api/categories/subcategories/${subId}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error('Failed to delete subcategory');
-  return await res.json();
-}
-
-export async function getBiography(subId) {
-  const res = await fetch(`/api/biography/${encodeURIComponent(subId)}`);
-  if (!res.ok) throw new Error('Failed to fetch biography');
-  return await res.json();
-}
-
-export async function saveBiography(subId, contentHtml) {
-  const res = await fetchWithAuth(`/api/biography/${encodeURIComponent(subId)}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contentHtml })
-  });
-  if (!res.ok) throw new Error('Failed to save biography');
-  return await res.json();
-}
-
-
-export async function listPaintings(subcategoryId, page, limit) {
-  const qs = new URLSearchParams();
-  if (page !== undefined) qs.set('page', page);
-  if (limit !== undefined) qs.set('limit', limit);
-  const url = `/api/paintings/${subcategoryId}${qs.toString() ? `?${qs}` : ''}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('Failed to fetch paintings');
-  const data = await res.json();
-  if (Array.isArray(data)) return { items: data, total: data.length, page: 0, pages: 1, hasMore: false };
-  return data;
-}`);
-  if (!res.ok) throw new Error('Failed to fetch paintings');
-  return await res.json();
-}
-
-export async function uploadPaintings(subId, files, descriptions=[]) {
-  const form = new FormData();
-  for (let i=0;i<files.length;i++){ form.append('images', files[i]); form.append('descriptions', descriptions[i]||''); }
-  const res = await fetchWithAuth(`/api/paintings/${encodeURIComponent(subId)}`, {
-    method: 'POST',
-    body: form
-  });
-  if (!res.ok) throw new Error('Failed to upload images');
-  return await res.json();
-}
-
-export async function deletePainting(id) {
-  const res = await fetchWithAuth(`/api/paintings/item/${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error('Failed to delete painting');
-  return await res.json();
-}
-
-
-// --- Category CRUD (no seed) ---
 export async function addCategory(payload) {
-  const res = await fetchWithAuth(`/api/categories`, {
+  const res = await fetchWithAuth('/api/categories', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
@@ -273,9 +115,87 @@ export async function updateCategory(id, payload) {
 }
 
 export async function deleteCategory(id) {
-  const res = await fetchWithAuth(`/api/categories/${id}`, {
-    method: 'DELETE'
-  });
+  const res = await fetchWithAuth(`/api/categories/${id}`, { method: 'DELETE' });
   if (!res.ok) throw new Error('Failed to delete category');
+  return await res.json();
+}
+
+/* ===================== Subcategories ===================== */
+export async function fetchSubcategories(categoryId) {
+  if (!categoryId) return [];
+  const res = await fetch(`/api/categories/${categoryId}/subcategories`);
+  if (!res.ok) throw new Error('Failed to fetch subcategories');
+  return await res.json();
+}
+
+export async function addSubcategory(categoryId, payload) {
+  const res = await fetchWithAuth(`/api/categories/${categoryId}/subcategories`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('Failed to add subcategory');
+  return await res.json();
+}
+
+export async function updateSubcategory(id, payload) {
+  const res = await fetchWithAuth(`/api/categories/subcategories/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('Failed to update subcategory');
+  return await res.json();
+}
+
+export async function deleteSubcategory(id) {
+  const res = await fetchWithAuth(`/api/categories/subcategories/${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error('Failed to delete subcategory');
+  return await res.json();
+}
+
+/* ===================== Biography ===================== */
+export async function getBiography(subcategoryId) {
+  const res = await fetch(`/api/biography/${subcategoryId}`);
+  if (!res.ok) throw new Error('Failed to fetch biography');
+  return await res.json();
+}
+
+export async function saveBiography(subcategoryId, payload) {
+  const res = await fetchWithAuth(`/api/biography/${subcategoryId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('Failed to save biography');
+  return await res.json();
+}
+
+/* ===================== Paintings ===================== */
+export async function listPaintings(subcategoryId, page, limit) {
+  const qs = new URLSearchParams();
+  if (page !== undefined) qs.set('page', page);
+  if (limit !== undefined) qs.set('limit', limit);
+  const url = `/api/paintings/${subcategoryId}${qs.toString() ? `?${qs}` : ''}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Failed to fetch paintings');
+  const data = await res.json();
+  return Array.isArray(data) ? { items: data, total: data.length, page: 0, pages: 1, hasMore: false } : data;
+}
+
+export async function uploadPaintings(subcategoryId, files) {
+  const form = new FormData();
+  for (const f of files) form.append('images', f);
+  const res = await fetchWithAuth(`/api/paintings/upload/${subcategoryId}`, {
+    method: 'POST',
+    body: form
+  });
+  if (!res.ok) throw new Error('Failed to upload paintings');
+  return await res.json();
+}
+
+export async function deletePainting(id) {
+  const res = await fetchWithAuth(`/api/paintings/item/${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error('Failed to delete painting');
   return await res.json();
 }
