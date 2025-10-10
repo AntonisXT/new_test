@@ -804,7 +804,6 @@ async function renderCategoriesAdmin() {
 
 async function renderBiographyAdmin() {
   const content = document.getElementById('content');
-  if (!content) return;
   content.innerHTML = `<div class="card">
     <div class="headline"><h2>Διαχείριση Βιογραφίας</h2></div>
 
@@ -848,7 +847,6 @@ async function renderBiographyAdmin() {
       });
     }
     const editor = document.getElementById('bioEditor');
-  if (!editor) return;
   const saveBtn = document.getElementById('bioSaveBtn');
   function setBioEnabled(on){ if(editor) editor.disabled = !on; if(saveBtn) saveBtn.disabled = !on; }
   setBioEnabled(!!subSel.value);
@@ -863,15 +861,14 @@ subSel.addEventListener('change', () => { setBioEnabled(!!subSel.value); });
   subSel.addEventListener('change', loadBio);
   await loadBio();
 
-  const _bioSaveBtn = document.getElementById('bioSaveBtn'); if (!_bioSaveBtn) return; _bioSaveBtn.addEventListener('click', async () => {
-    await saveBiography(subSel.value, { contentHtml: editor.value });
+  document.getElementById('bioSaveBtn').addEventListener('click', async () => {
+    await saveBiography(subSel.value, editor.value);
     alert('Αποθηκεύτηκε.');
   });
 }
 
 async function renderPaintingsAdmin() {
   const content = document.getElementById('content');
-  if (!content) return;
   content.innerHTML = `<div class="card">
     <div class="headline"><h2>Διαχείριση Πινάκων</h2></div>
 
@@ -956,6 +953,8 @@ subSel.addEventListener('change', () => { setPaintEnabled(!!subSel.value); });
       </figure>`).join('') : '<p>Δεν υπάρχουν εικόνες.</p>';
   }
   subSel.addEventListener('change', ()=>{ setPaintEnabled(!!subSel.value); loadGallery(); });
+// ensure load more is visible after change too
+(async ()=>{ try { const _ = await listPaintings(subSel.value); } catch{} })();
   if (subSel.value) await loadGallery();
 
   const _uploadBtnEl = document.getElementById('paintUploadBtn');
@@ -992,7 +991,7 @@ subSel.addEventListener('change', () => { setPaintEnabled(!!subSel.value); });
       more.className = 'button';
       more.textContent = 'Φορτώστε περισσότερα';
       wrap.appendChild(more);
-      gal.parentElement.appendChild(wrap);
+      (gal.parentElement && gal.parentElement.parentElement ? gal.parentElement.parentElement : gal.parentElement).appendChild(wrap);
       more.addEventListener('click', async () => {
         const nxt = await listPaintings(subSel.value, pg + 1, L);
         const moreItems = asList(nxt);
@@ -1017,7 +1016,6 @@ subSel.addEventListener('change', () => { setPaintEnabled(!!subSel.value); });
 
 async function renderExhibitionsAdmin() {
   const content = document.getElementById('content');
-  if (!content) return;
   content.innerHTML = `<div class="card">
     <div class="headline"><h2>Διαχείριση Εκθέσεων</h2></div>
 
@@ -1088,7 +1086,6 @@ async function renderExhibitionsAdmin() {
       });
     }
     const tbody = document.getElementById('exhTableBody');
-  if (!tbody) return;
   const titleEl = document.getElementById('exhTitle');
   const dateEl = document.getElementById('exhDate');
   const locEl = document.getElementById('exhLocation');
@@ -1185,7 +1182,6 @@ async function renderExhibitionsAdmin() {
 
 async function renderLinksAdmin() {
   const content = document.getElementById('content');
-  if (!content) return;
   content.innerHTML = `<div class="card">
     <div class="headline"><h2>Διαχείριση Συνδέσμων</h2></div>
 
@@ -1251,7 +1247,6 @@ async function renderLinksAdmin() {
       });
     }
     const tbody = document.getElementById('linkTableBody');
-  if (!tbody) return;
   const titleEl = document.getElementById('linkTitle');
   const urlEl = document.getElementById('linkUrl');
   const saveBtn = document.getElementById('linkSaveBtn');
@@ -1317,10 +1312,7 @@ async function renderLinksAdmin() {
   function clearForm(){ editId=null; titleEl.value=''; urlEl.value=''; saveBtn.textContent='Αποθήκευση'; cancelBtn.style.display='none'; }
 
   saveBtn.addEventListener('click', async () => {
-    let url = urlEl.value.trim();
-    if (url && !/^https?:\/\//i.test(url)) url = 'https://' + url;
-    try { url = new URL(url).toString(); } catch (e) { url = encodeURI(url); }
-    const payload = { title: titleEl.value.trim(), url, subcategory: subSel.value };
+    const payload = { title: titleEl.value.trim(), url: urlEl.value.trim(), subcategory: subSel.value };
     if (!payload.url) return alert('Το URL είναι υποχρεωτικό.');
     if (editId) await updateLink(editId, payload); else await addLink(payload);
     clearForm(); await loadList(); await loadAsideMenus();
