@@ -594,7 +594,7 @@ async function renderPaintingsPublic(token) {
     if (resp && resp.hasMore) {
       const more = document.createElement('button');
       more.className = 'button';
-      more.textContent = 'Φορτώστε περισσότερα';
+      more.textContent = 'Εμφάνιση περισσότερων';
       wrap.appendChild(more);
       gal.parentElement.appendChild(wrap);
       more.addEventListener('click', async () => {
@@ -1003,7 +1003,7 @@ subSel.addEventListener('change', () => { setPaintEnabled(!!subSel.value); });
     wrap.style.marginTop = '12px';
     const more = document.createElement('button');
     more.className = 'button';
-    more.textContent = 'Φορτώστε περισσότερα';
+    more.textContent = 'Εμφάνιση περισσότερων';
     wrap.appendChild(more);
     // append under the form-row that contains the gallery
     const host = gal.parentElement && gal.parentElement.parentElement ? gal.parentElement.parentElement : gal.parentElement || gal;
