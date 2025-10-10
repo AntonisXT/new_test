@@ -566,14 +566,30 @@ async function renderPaintingsPublic(token) {
   const sub = await resolveSubcategory('paintings', token);
   const content = document.getElementById('content');
   if (!sub) { content.innerHTML = '<div class="card"><p>Δεν βρέθηκε η ενότητα.</p></div>'; return; }
-  const items = await listPaintings(sub._id);
-  content.innerHTML = `<div class="card"><div class="headline"><h2>${sub.name}</h2></div><div id="gallery" class="gallery"></div></div>`;
+  let page = 0; const limit = 12; let all = [];
+  content.innerHTML = `<div class="card"><div class="headline"><h2>Πίνακες</h2></div><div id="gallery" class="gallery"></div><div class="controls"><button id="loadMore" class="btn">Φόρτωσε περισσότερα</button></div></div>`;
   const gal = document.getElementById('gallery');
-  gal.innerHTML = items.length
-    ? items.map(i => `
-      <figure>
-        <div class="media">
-          <img src="${i.dataUrl}" alt="${(i.description||i.title||'').replace(/`/g,'´')}" loading="lazy" />
+  const btn = document.getElementById('loadMore');
+
+  async function loadPage() {
+    const batch = await listPaintings(sub._id, page, limit);
+    all = all.concat(batch);
+    gal.innerHTML = all.length
+      ? all.map(i => `
+        <figure>
+          <div class="media">
+            <img src="${i.dataUrl}" alt="${(i.description||i.title||'').replace(/"/g,'&quot;')}" />
+          </div>
+          <figcaption>${i.title ? `<strong>${i.title}</strong>` : ''}${i.description ? `<div>${i.description}</div>` : ''}</figcaption>
+        </figure>`
+      ).join('')
+      : '<p>Δεν υπάρχουν πίνακες.</p>';
+    if (batch.length < limit) { btn.style.display = 'none'; } else { btn.style.display = ''; page += 1; }
+  }
+
+  btn.addEventListener('click', () => { loadPage(); });
+  await loadPage();
+}" alt="${(i.description||i.title||'').replace(/`/g,'´')}" loading="lazy" />
         </div>
         <figcaption title="${(i.description||i.title||'').replace(/`/g,'´')}">
           ${i.description||i.title||""}
@@ -910,19 +926,34 @@ async function renderPaintingsAdmin() {
   function setPaintEnabled(on){ if(filesEl) filesEl.disabled = !on; if(uploadBtn) uploadBtn.disabled = !on; }
   setPaintEnabled(!!subSel.value);
 subSel.addEventListener('change', () => { setPaintEnabled(!!subSel.value); });
-  async function loadGallery(){ if (!subSel || !subSel.value) { gal.innerHTML = '<p>Δεν υπάρχουν υποκατηγορίες.</p>'; return; }
-    const items = await listPaintings(subSel.value);
-    gal.innerHTML = items.length ? items.map(i => `
-      <figure data-id="${i._id}">
-        <button class="danger del" title="Διαγραφή">Διαγραφή</button>
-        <div class="media">
-          <img src="${i.dataUrl}" alt="${i.description||i.title||''}" />
-        </div>
-        <figcaption title="${i.description||i.title||''}">
-          ${i.description||i.title||''}
-          <button class="danger del" style="float:right;margin-left:.5rem;">Διαγραφή</button>
-        </figcaption>
-      </figure>`).join('') : '<p>Δεν υπάρχουν εικόνες.</p>';
+  async function loadGallery(){
+    if (!subSel || !subSel.value) { gal.innerHTML = '<p>Δεν υπάρχουν υποκατηγορίες.</p>'; return; }
+    let page = 0; const limit = 20; let all = [];
+    gal.innerHTML = ''; // reset
+    async function loadPage(){
+      const batch = await listPaintings(subSel.value, page, limit);
+      all = all.concat(batch);
+      gal.innerHTML = all.length ? all.map(i => `
+        <figure data-id="${i._id}">
+          <button class="danger del" title="Διαγραφή">Διαγραφή</button>
+          <div class="media">
+            <img src="${i.dataUrl}" alt="${(i.description||i.title||'').replace(/"/g,'&quot;')}" />
+          </div>
+          <figcaption>${i.title ? `<strong>${i.title}</strong>` : ''}${i.description ? `<div>${i.description}</div>` : ''}</figcaption>
+        </figure>`).join('') : '<p>Δεν υπάρχουν πίνακες.</p>';
+      const ctlId = 'adminLoadMore';
+      let ctl = document.getElementById(ctlId);
+      if (!ctl) {
+        const wrapper = document.createElement('div'); wrapper.className = 'controls';
+        wrapper.innerHTML = `<button id="${ctlId}" class="btn">Φόρτωσε περισσότερα</button>`;
+        gal.parentElement.appendChild(wrapper);
+        ctl = document.getElementById(ctlId);
+        ctl.addEventListener('click', () => loadPage());
+      }
+      if (batch.length < limit) { ctl.style.display = 'none'; } else { ctl.style.display = ''; page += 1; }
+    }
+    await loadPage();
+  }
   }
   subSel.addEventListener('change', ()=>{ setPaintEnabled(!!subSel.value); loadGallery(); });
   if (subSel.value) await loadGallery();
