@@ -804,6 +804,7 @@ async function renderCategoriesAdmin() {
 
 async function renderBiographyAdmin() {
   const content = document.getElementById('content');
+  if (!content) return;
   content.innerHTML = `<div class="card">
     <div class="headline"><h2>Διαχείριση Βιογραφίας</h2></div>
 
@@ -847,6 +848,7 @@ async function renderBiographyAdmin() {
       });
     }
     const editor = document.getElementById('bioEditor');
+  if (!editor) return;
   const saveBtn = document.getElementById('bioSaveBtn');
   function setBioEnabled(on){ if(editor) editor.disabled = !on; if(saveBtn) saveBtn.disabled = !on; }
   setBioEnabled(!!subSel.value);
@@ -861,7 +863,7 @@ subSel.addEventListener('change', () => { setBioEnabled(!!subSel.value); });
   subSel.addEventListener('change', loadBio);
   await loadBio();
 
-  document.getElementById('bioSaveBtn').addEventListener('click', async () => {
+  const _bioSaveBtn = document.getElementById('bioSaveBtn'); if (!_bioSaveBtn) return; _bioSaveBtn.addEventListener('click', async () => {
     await saveBiography(subSel.value, { contentHtml: editor.value });
     alert('Αποθηκεύτηκε.');
   });
@@ -1086,6 +1088,7 @@ async function renderExhibitionsAdmin() {
       });
     }
     const tbody = document.getElementById('exhTableBody');
+  if (!tbody) return;
   const titleEl = document.getElementById('exhTitle');
   const dateEl = document.getElementById('exhDate');
   const locEl = document.getElementById('exhLocation');
@@ -1182,6 +1185,7 @@ async function renderExhibitionsAdmin() {
 
 async function renderLinksAdmin() {
   const content = document.getElementById('content');
+  if (!content) return;
   content.innerHTML = `<div class="card">
     <div class="headline"><h2>Διαχείριση Συνδέσμων</h2></div>
 
@@ -1247,6 +1251,7 @@ async function renderLinksAdmin() {
       });
     }
     const tbody = document.getElementById('linkTableBody');
+  if (!tbody) return;
   const titleEl = document.getElementById('linkTitle');
   const urlEl = document.getElementById('linkUrl');
   const saveBtn = document.getElementById('linkSaveBtn');
