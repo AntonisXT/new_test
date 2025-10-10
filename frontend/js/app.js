@@ -621,13 +621,9 @@ async function renderPaintingsPublic(token) {
 async function renderExhibitionsPublic(token) {
   const sub = await resolveSubcategory('exhibitions', token);
   const content = document.getElementById('content');
-  const list = await fetchExhibitions();
-  let filtered = list;
-  if (sub && sub._id) {
-    filtered = list.filter(x => (x.subcategory === sub._id) || (x.subcategoryId === sub._id));
-  } else if (token) {
-    filtered = list.filter(x => (x.category === token) || (x.subcategoryName === token));
-  }
+  const subId = sub && sub._id ? sub._id : undefined;
+  const exResp = await fetchExhibitions(subId);
+  const filtered = asList(exResp);
   content.innerHTML = `<div class="card"><div class="headline"><h2>${sub ? sub.name : 'Εκθέσεις'}</h2></div><ul class="exhibitions-list"></ul></div>`;
   const ul = document.querySelector('.exhibitions-list');
   if (!filtered.length) { ul.innerHTML = '<li>Δεν υπάρχουν εγγραφές ακόμη.</li>'; return; }
@@ -658,13 +654,9 @@ async function renderExhibitionsPublic(token) {
 async function renderLinksPublic(token) {
   const sub = await resolveSubcategory('links', token);
   const content = document.getElementById('content');
-  const list = await fetchLinks();
-  let filtered = list;
-  if (sub && sub._id) {
-    filtered = list.filter(x => (x.subcategory === sub._id) || (x.subcategoryId === sub._id));
-  } else if (token) {
-    filtered = list.filter(x => (x.category === token) || (x.subcategoryName === token));
-  }
+  const subId = sub && sub._id ? sub._id : undefined;
+  const lnResp = await fetchLinks(subId);
+  const filtered = asList(lnResp);
   content.innerHTML = `<div class="card"><div class="headline"><h2>${sub ? sub.name : 'Σύνδεσμοι'}</h2></div><ul class="links-list"></ul></div>`;
   const ul = document.querySelector('.links-list');
   if (!filtered.length) { ul.innerHTML = '<li>Δεν υπάρχουν σύνδεσμοι ακόμη.</li>'; return; }
@@ -987,11 +979,12 @@ subSel.addEventListener('change', () => { setPaintEnabled(!!subSel.value); });
   });
   // -- Load more for admin gallery --
   (async () => {
-    let pg = (resp.page ?? 0);
+    const first = await listPaintings(subSel.value);
+    let pg = (first.page ?? 0);
     const L = 12;
     const wrap = document.createElement('div');
     wrap.style.marginTop = '12px';
-    if (resp && resp.hasMore) {
+    if (first && first.hasMore) {
       const more = document.createElement('button');
       more.className = 'button';
       more.textContent = 'Φορτώστε περισσότερα';
