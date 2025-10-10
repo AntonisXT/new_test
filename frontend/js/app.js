@@ -1310,7 +1310,9 @@ async function renderLinksAdmin() {
   function clearForm(){ editId=null; titleEl.value=''; urlEl.value=''; saveBtn.textContent='Αποθήκευση'; cancelBtn.style.display='none'; }
 
   saveBtn.addEventListener('click', async () => {
-    const payload = { title: titleEl.value.trim(), url: urlEl.value.trim(), subcategory: subSel.value };
+    let url = urlEl.value.trim();
+    if (url && !/^https?:\/\//i.test(url)) url = 'https://' + url;
+    const payload = { title: titleEl.value.trim(), url, subcategory: subSel.value };
     if (!payload.url) return alert('Το URL είναι υποχρεωτικό.');
     if (editId) await updateLink(editId, payload); else await addLink(payload);
     clearForm(); await loadList(); await loadAsideMenus();
