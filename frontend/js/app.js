@@ -862,7 +862,7 @@ subSel.addEventListener('change', () => { setBioEnabled(!!subSel.value); });
   await loadBio();
 
   document.getElementById('bioSaveBtn').addEventListener('click', async () => {
-    await saveBiography(subSel.value, editor.value);
+    await saveBiography(subSel.value, { contentHtml: editor.value });
     alert('Αποθηκεύτηκε.');
   });
 }
