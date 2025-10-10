@@ -1,31 +1,16 @@
-const Joi = require('joi');
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const Painting = require('../models/painting');
 const auth = require('../middleware/auth');
-const validate = require('../server/middleware/validate');
-const paginate = require('../server/utils/paginate');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB per file
 
 // List by subcategory
-router.get('/:subcategoryId',
-  validate({ 
-    params: Joi.object({ subcategoryId: Joi.string().hex().length(24).required() }),
-    query: Joi.object({ page: Joi.number().integer().min(0).optional(), limit: Joi.number().integer().min(0).max(100).optional() })
-  }),
-  async (req, res) => {
+router.get('/:subcategoryId', async (req, res) => {
   try {
-    let items;
-    const baseQuery = Painting.find({ subcategory: req.params.subcategoryId });
-    if (req.query.page !== undefined || req.query.limit !== undefined) {
-      const { items: pagedItems } = await paginate(baseQuery, { page: req.query.page, limit: req.query.limit, sort: { createdAt: -1 } });
-      items = pagedItems;
-    } else {
-      items = await baseQuery.sort({ createdAt: -1 });
-    }
+    const items = await Painting.find({ subcategory: req.params.subcategoryId }).sort({ createdAt: -1 });
     // convert to base64 for frontend
     const payload = items.map(p => ({
       _id: p._id,
@@ -66,7 +51,7 @@ router.post('/:subcategoryId', auth, upload.array('images', 10), async (req, res
   }
 });
 
-router.delete('/item/:id', auth, validate({ params: Joi.object({ id: Joi.string().hex().length(24).required() }) }), async (req, res) => {
+router.delete('/item/:id', auth, async (req, res) => {
   try {
     await Painting.findByIdAndDelete(req.params.id);
     res.json({ ok: true });

@@ -35,7 +35,7 @@ function showQuickCreateSubModal(parentCatId, onCreated) {
       <h3 style="margin:0;font-size:18px">Νέα υποκατηγορία</h3>
       <button id="qsClose" class="secondary" style="border:none;background:transparent;font-size:18px;cursor:pointer">✕</button>
     </div>
-    <p style="margin:0 0 12px 0;color:#555">Δεν υπάρχουνυν υποκατηγορίες. Δημιούργησε μία για να συνεχίσεις.</p>
+    <p style="margin:0 0 12px 0;color:#555">Δεν υπάρχουν υποκατηγορίες. Δημιούργησε μία για να συνεχίσεις.</p>
     <div style="display:flex;gap:10px">
       <input id="qsName" class="control" placeholder="Όνομα υποκατηγορίας" style="flex:1"/>
       <button id="qsCreate" class="button">Δημιουργία</button>
@@ -480,7 +480,7 @@ async function loadAsideMenus() {
         const subs = await fetchSubcategories(catBio._id);
         bioList.innerHTML = subs.length
           ? subs.map(s => `<li><a href="#" data-category="${s.key}">${s.name}</a></li>`).join('')
-          : '<li><em>Δεν υπάρχουνυν υποκατηγορίες</em></li>';
+          : '<li><em>Δεν υπάρχουν υποκατηγορίες</em></li>';
       } else { bioList.innerHTML = '<li><em>Δεν υπάρχει κατηγορία Βιογραφία</em></li>'; }
     }
 
@@ -490,7 +490,7 @@ async function loadAsideMenus() {
         const subs = await fetchSubcategories(catPaint._id);
         paintList.innerHTML = subs.length
           ? subs.map(s => `<li><a href="#" data-category="${s.key}">${s.name}</a></li>`).join('')
-          : '<li><em>Δεν υπάρχουνυν υποκατηγορίες</em></li>';
+          : '<li><em>Δεν υπάρχουν υποκατηγορίες</em></li>';
       } else { paintList.innerHTML = '<li><em>Δεν υπάρχει κατηγορία Πίνακες</em></li>'; }
     }
 
@@ -500,7 +500,7 @@ async function loadAsideMenus() {
         const subs = await fetchSubcategories(catExh._id);
         exhList.innerHTML = subs.length
           ? subs.map(s => `<li><a href="#" data-category="${s.key||s.name}">${s.name}</a></li>`).join('')
-          : '<li><em>Δεν υπάρχουνυν υποκατηγορίες</em></li>';
+          : '<li><em>Δεν υπάρχουν υποκατηγορίες</em></li>';
       } else { exhList.innerHTML = '<li><em>Δεν υπάρχει κατηγορία Εκθέσεις</em></li>'; }
     }
 
@@ -510,7 +510,7 @@ async function loadAsideMenus() {
         const subs = await fetchSubcategories(catLink._id);
         linkList.innerHTML = subs.length
           ? subs.map(s => `<li><a href="#" data-category="${s.key||s.name}">${s.name}</a></li>`).join('')
-          : '<li><em>Δεν υπάρχουνυν υποκατηγορίες</em></li>';
+          : '<li><em>Δεν υπάρχουν υποκατηγορίες</em></li>';
       } else { linkList.innerHTML = '<li><em>Δεν υπάρχει κατηγορία Συνδέσμοι</em></li>'; }
     }
     bindSidebarClicksOnce();
@@ -566,29 +566,20 @@ async function renderPaintingsPublic(token) {
   const sub = await resolveSubcategory('paintings', token);
   const content = document.getElementById('content');
   if (!sub) { content.innerHTML = '<div class="card"><p>Δεν βρέθηκε η ενότητα.</p></div>'; return; }
-  let page = 0; const limit = 12; let all = [];
-  content.innerHTML = `<div class="card"><div class="headline"><h2>Πίνακες</h2></div><div id="gallery" class="gallery"></div><div class="controls"><button id="loadMore" class="btn">Φόρτωσε περισσότερα</button></div></div>`;
+  const items = await listPaintings(sub._id);
+  content.innerHTML = `<div class="card"><div class="headline"><h2>${sub.name}</h2></div><div id="gallery" class="gallery"></div></div>`;
   const gal = document.getElementById('gallery');
-  const btn = document.getElementById('loadMore');
-
-  async function loadPage() {
-    const batch = await listPaintings(sub._id, page, limit);
-    all = all.concat(batch);
-    gal.innerHTML = all.length
-      ? all.map(i => `
-        <figure>
-          <div class="media">
-            <img src="${i.dataUrl}" alt="${(i.description||i.title||'').replace(/"/g,'&quot;')}" loading="lazy" />
-          </div>
-          <figcaption>${i.title ? `<strong>${i.title}</strong>ong>` : ''}${i.description ? `<div>${i.description}</div>` : ''}</figcaption>
-        </figure>`
-      ).join('')
-      : '<p>Δεν υπάρχουνυν πίνακες.</p>';
-    if (batch.length < limit) { btn.style.display = 'none'; } else { btn.style.display = ''; page += 1; }
-  }
-
-  btn.addEventListener('click', () => { loadPage(); });
-  await loadPage();
+  gal.innerHTML = items.length
+    ? items.map(i => `
+      <figure>
+        <div class="media">
+          <img src="${i.dataUrl}" alt="${(i.description||i.title||'').replace(/`/g,'´')}" loading="lazy" />
+        </div>
+        <figcaption title="${(i.description||i.title||'').replace(/`/g,'´')}">
+          ${i.description||i.title||""}
+        </figcaption>
+      </figure>`).join('')
+    : '<p>Δεν υπάρχουν εικόνες ακόμη.</p>';
 }
 
 
@@ -604,7 +595,7 @@ async function renderExhibitionsPublic(token) {
   }
   content.innerHTML = `<div class="card"><div class="headline"><h2>${sub ? sub.name : 'Εκθέσεις'}</h2></div><ul class="exhibitions-list"></ul></div>`;
   const ul = document.querySelector('.exhibitions-list');
-  if (!filtered.length) { ul.innerHTML = '<li>Δεν υπάρχουνυν εγγραφές ακόμη.</li>'; return; }
+  if (!filtered.length) { ul.innerHTML = '<li>Δεν υπάρχουν εγγραφές ακόμη.</li>'; return; }
   const parts = [];
   filtered.forEach(e => {
     const title = (e.title || '').replace(/`/g,'´');
@@ -641,7 +632,7 @@ async function renderLinksPublic(token) {
   }
   content.innerHTML = `<div class="card"><div class="headline"><h2>${sub ? sub.name : 'Σύνδεσμοι'}</h2></div><ul class="links-list"></ul></div>`;
   const ul = document.querySelector('.links-list');
-  if (!filtered.length) { ul.innerHTML = '<li>Δεν υπάρχουνυν σύνδεσμοι ακόμη.</li>'; return; }
+  if (!filtered.length) { ul.innerHTML = '<li>Δεν υπάρχουν σύνδεσμοι ακόμη.</li>'; return; }
   const parts = [];
   filtered.forEach(l => {
     const url = l.url || '#';
@@ -753,7 +744,7 @@ async function renderCategoriesAdmin() {
           <span class="spacer"></span>
           <button class="danger delete">Διαγραφή</button>
         </td>
-      </tr>`).join('') : `<tr><td colspan="2">Δεν υπάρχουνυν υποκατηγορίες.</td></tr>`;
+      </tr>`).join('') : `<tr><td colspan="2">Δεν υπάρχουν υποκατηγορίες.</td></tr>`;
   }
   catSel.addEventListener('change', async ()=>{ editId=null; nameInput.value=''; await loadSubs(); await loadAsideMenus(); });
   await loadSubs();
@@ -853,72 +844,112 @@ async function renderPaintingsAdmin() {
   const content = document.getElementById('content');
   content.innerHTML = `<div class="card">
     <div class="headline"><h2>Διαχείριση Πινάκων</h2></div>
+
     <div class="admin-form">
       <div class="form-grid">
         <div class="form-row wide">
           <label>Υποκατηγορία</label>
           <select id="paintSubSel" class="control"></select>
         </div>
+        <div class="form-row wide">
+          <label>Νέα εικόνα:</label>
+          <input type="file" id="paintFiles" class="control" multiple accept="image/*"/>
+        </div>
+        <div class="form-row wide" id="paintDescRow" style="display:none">
+          <label>Περιγραφή για κάθε εικόνα:</label>
+          <div id="paintDescList" class="desc-list"></div>
+        </div>
+        <div class="form-row wide">
+          <button id="paintUploadBtn" class="button">Μεταφόρτωση</button>
+        </div>
       </div>
     </div>
-    <div id="gallery" class="gallery"></div>
-    <div class="controls"><button id="adminLoadMore" class="btn">Φόρτωσε περισσότερα</button></div>
+    <hr>
+    <div class="form-grid">
+      <div class="form-row wide">
+        <div class="gallery" id="paintGallery"></div>
+      </div>
+    </div>
   </div>`;
 
+  const cats = await fetchCategories();
+  const cat = cats.find(c => c.key === 'paintings');
   const subSel = document.getElementById('paintSubSel');
-  const gal = document.getElementById('gallery');
-  const loadMoreBtn = document.getElementById('adminLoadMore');
+  if (!cat) { subSel.innerHTML = `<option>Δεν υπάρχει κατηγορία Πίνακες</option>`; return; }
+  const subs = await fetchSubcategories(cat._id);
+  subSel.innerHTML = subs.length ? subs.map(s => `<option value="${s._id}">${s.name}</option>`).join('') : `<option value="" disabled selected>— καμία —</option>`;
 
-  // Populate subcategories under "paintings" category
-  try {
-    const cats = await fetchCategories();
-    const paintCat = cats.find(c => c.key === 'paintings');
-    if (!paintCat) {
-      subSel.innerHTML = `<option value="">Δεν βρέθηκε κατηγορία "Πίνακες"</option>`;
-      gal.innerHTML = '<p>Δεν υπάρχουνυν υποκατηγορίες.</p>';
-      loadMoreBtn.style.display = 'none';
-      return;
+  
+    // If empty, prompt to create a subcategory now
+    if (!subs.length) {
+      showQuickCreateSubModal(cat._id, async (created) => {
+        if (created && created._id) {
+          subSel.innerHTML = `<option value="${created._id}">${created.name}</option>`;
+          subSel.value = created._id;
+          const ev = new Event('change'); subSel.dispatchEvent(ev); if (typeof loadGallery==='function') await loadGallery();
+        }
+      });
     }
-    const subs = await fetchSubcategories(paintCat._id);
-    subSel.innerHTML = subs.length ? subs.map(s => `<option value="${s._id}">${s.name}</option>`).join('') : `<option value="">— καμία —</option>`;
-  } catch (e) {
-    subSel.innerHTML = `<option value="">Σφάλμα φόρτωσης υποκατηγοριών</option>`;
+    const gal = document.getElementById('paintGallery');
+  const filesEl = document.getElementById('paintFiles');
+  const uploadBtn = document.getElementById('paintUploadBtn');
+  const descList = document.getElementById('paintDescList');
+  const descRow = document.getElementById('paintDescRow');
+  function renderDescInputs(files){
+    if (descRow) descRow.style.display = (files && files.length) ? '' : 'none';
+    if(!files || !files.length){ descList.innerHTML = ''; return; }
+    const rows = [];
+    for(let i=0;i<files.length;i++){
+      const f = files[i];
+      rows.push(`<div class="desc-row"><label class="desc-label">${f.name}</label><textarea class="control paint-desc" data-idx="${i}" placeholder="Περιγραφή (προαιρετικό)"></textarea></div>`);
+    }
+    descList.innerHTML = rows.join('');
   }
+  if (filesEl) filesEl.addEventListener('change', ()=>{ renderDescInputs(filesEl.files); });
 
-  let page = 0; const limit = 20; let all = [];
-
-  async function loadPage() {
-    if (!subSel.value) { gal.innerHTML = '<p>Δεν υπάρχουνυν υποκατηγορίες.</p>'; loadMoreBtn.style.display = 'none'; return; }
-    const batch = await listPaintings(subSel.value, page, limit);
-    all = all.concat(batch);
-    gal.innerHTML = all.length ? all.map(i => `
+  function setPaintEnabled(on){ if(filesEl) filesEl.disabled = !on; if(uploadBtn) uploadBtn.disabled = !on; }
+  setPaintEnabled(!!subSel.value);
+subSel.addEventListener('change', () => { setPaintEnabled(!!subSel.value); });
+  async function loadGallery(){ if (!subSel || !subSel.value) { gal.innerHTML = '<p>Δεν υπάρχουν υποκατηγορίες.</p>'; return; }
+    const items = await listPaintings(subSel.value);
+    gal.innerHTML = items.length ? items.map(i => `
       <figure data-id="${i._id}">
         <button class="danger del" title="Διαγραφή">Διαγραφή</button>
         <div class="media">
-          <img src="${i.dataUrl}" alt="${(i.description||i.title||'').replace(/"/g,'&quot;')}" />
+          <img src="${i.dataUrl}" alt="${i.description||i.title||''}" />
         </div>
-        <figcaption>${i.title ? `<strong>${i.title}</strong>ong>` : ''}${i.description ? `<div>${i.description}</div>` : ''}</figcaption>
-      </figure>`).join('') : '<p>Δεν υπάρχουνυν πίνακες.</p>';
-    if (batch.length < limit) { loadMoreBtn.style.display = 'none'; } else { loadMoreBtn.style.display = ''; page += 1; }
+        <figcaption title="${i.description||i.title||''}">
+          ${i.description||i.title||''}
+          <button class="danger del" style="float:right;margin-left:.5rem;">Διαγραφή</button>
+        </figcaption>
+      </figure>`).join('') : '<p>Δεν υπάρχουν εικόνες.</p>';
   }
+  subSel.addEventListener('change', ()=>{ setPaintEnabled(!!subSel.value); loadGallery(); });
+  if (subSel.value) await loadGallery();
 
-  subSel.addEventListener('change', async () => { page = 0; all = []; gal.innerHTML = ''; loadMoreBtn.style.display = ''; await loadPage(); });
-  loadMoreBtn.addEventListener('click', () => { loadPage(); });
+  const _uploadBtnEl = document.getElementById('paintUploadBtn');
+  if (_uploadBtnEl) _uploadBtnEl.addEventListener('click', async () => { if (typeof isLoggedIn==='function' && !isLoggedIn()) { alert('Απαιτείται σύνδεση.'); return; } if (!subSel.value) return alert('Δημιούργησε υποκατηγορία πρώτα.');
+    const files = document.getElementById('paintFiles').files;
+    if (!files || !files.length) return alert('Επίλεξε εικόνες.');
+    const descEls = Array.from(document.querySelectorAll('.paint-desc'));
+    const descriptions = descEls.map(el => el.value || '');
+    await uploadPaintings(subSel.value, files, descriptions);
+    document.getElementById('paintFiles').value = '';
+    const _descListEl = document.getElementById('paintDescList'); if (_descListEl) _descListEl.innerHTML = '';
+    const _descRowEl = document.getElementById('paintDescRow'); if (_descRowEl) _descRowEl.style.display = 'none';
+    await loadGallery();
+  });
 
-  gal.addEventListener('click', async (e) => {
+  if (gal) gal.addEventListener('click', async (e) => {
     const fig = e.target.closest('figure[data-id]');
     if (!fig) return;
     if (e.target.classList.contains('del')) {
       if (!confirm('Διαγραφή εικόνας;')) return;
       await deletePainting(fig.getAttribute('data-id'));
-      // refresh current page by reloading from scratch
-      page = 0; all = []; gal.innerHTML = ''; loadMoreBtn.style.display = ''; await loadPage();
+      await loadGallery();
     }
   });
-
-  await loadPage();
 }
-
 
 async function renderExhibitionsAdmin() {
   const content = document.getElementById('content');
@@ -1001,11 +1032,11 @@ async function renderExhibitionsAdmin() {
   function setExhEnabled(on){ if(titleEl) titleEl.disabled=!on; if(dateEl) dateEl.disabled=!on; if(locEl) locEl.disabled=!on; if(saveBtn) saveBtn.disabled=!on; }
   setExhEnabled(!!subSel.value);
 
-  async function loadExh(){ if (!subSel || !subSel.value) { tbody.innerHTML = `<tr><td colspan="5">Δεν υπάρχουνυν υποκατηγορίες.</td></tr>`; return; }
+  async function loadExh(){ if (!subSel || !subSel.value) { tbody.innerHTML = `<tr><td colspan="5">Δεν υπάρχουν υποκατηγορίες.</td></tr>`; return; }
     const all = await fetchExhibitions();
     const subId = subSel.value;
     const list = all.filter(e => (e.subcategory === subId) || (e.subcategoryId === subId));
-    if (!list.length) { tbody.innerHTML = `<tr><td colspan="4">Δεν υπάρχουνυν εκθέσεις σε αυτή την κατηγορία.</td></tr>`; return; }
+    if (!list.length) { tbody.innerHTML = `<tr><td colspan="4">Δεν υπάρχουν εκθέσεις σε αυτή την κατηγορία.</td></tr>`; return; }
     tbody.innerHTML = list.map(e => `
       <tr data-id="${e._id}">
         <td>${e.title||''}</td>
@@ -1127,11 +1158,11 @@ async function renderLinksAdmin() {
   function setLinkEnabled(on){ if(titleEl) titleEl.disabled=!on; if(urlEl) urlEl.disabled=!on; if(saveBtn) saveBtn.disabled=!on; }
   setLinkEnabled(!!subSel.value);
 
-  async function loadList(){ if (!subSel || !subSel.value) { tbody.innerHTML = `<tr><td colspan="3">Δεν υπάρχουνυν υποκατηγορίες.</td></tr>`; return; }
+  async function loadList(){ if (!subSel || !subSel.value) { tbody.innerHTML = `<tr><td colspan="3">Δεν υπάρχουν υποκατηγορίες.</td></tr>`; return; }
     const all = await fetchLinks();
     const subId = subSel.value;
     const list = all.filter(l => (l.subcategory === subId) || (l.subcategoryId === subId));
-    if (!list.length){ tbody.innerHTML = `<tr><td colspan="3">Δεν υπάρχουνυν σύνδεσμοι σε αυτή την κατηγορία.</td></tr>`; return; }
+    if (!list.length){ tbody.innerHTML = `<tr><td colspan="3">Δεν υπάρχουν σύνδεσμοι σε αυτή την κατηγορία.</td></tr>`; return; }
     tbody.innerHTML = list.map(l => `
       <tr data-id="${l._id}">
         <td>${l.title || ''}</td>

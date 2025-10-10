@@ -194,11 +194,8 @@ export async function saveBiography(subId, contentHtml) {
   return await res.json();
 }
 
-export async function listPaintings(subId, page, limit) {
-  const q = (page !== undefined && limit !== undefined)
-    ? `?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}`
-    : '';
-  const res = await fetch(`/api/paintings/${encodeURIComponent(subId)}${q}`);
+export async function listPaintings(subId) {
+  const res = await fetch(`/api/paintings/${encodeURIComponent(subId)}`);
   if (!res.ok) throw new Error('Failed to fetch paintings');
   return await res.json();
 }
