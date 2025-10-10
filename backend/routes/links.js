@@ -3,13 +3,20 @@ const express = require('express');
 const router = express.Router();
 const LinkItem = require('../models/linkItem');
 const auth = require('../middleware/auth');
+const validate = require('../server/middleware/validate');
+const { pagination, objectId, idParam, linkItemBody } = require('../server/validation/schemas');
+const paginate = require('../server/utils/paginate');
 
 // List (optionally filter by subcategory)
-router.get('/', async (req, res) => {
+router.get('/', validate({ query: pagination.keys({ subcategory: objectId.optional() }) }), async (req, res) => {
   try {
     const filter = {};
     if (req.query.subcategory) filter.subcategory = req.query.subcategory;
-    const items = await LinkItem.find(filter).sort({ createdAt: -1 });
+    const q = LinkItem.find(filter);
+    const result = await paginate(q, { page: req.query.page, limit: req.query.limit, sort: { createdAt: -1 } });
+    res.json(result);
+  } catch (e) { res.status(500).json({ msg: e.message }); }
+});
     res.json(items);
   } catch (e) {
     res.status(500).json({ msg: e.message });
@@ -17,7 +24,7 @@ router.get('/', async (req, res) => {
 });
 
 // Create
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, validate({ body: linkItemBody }), async (req, res) => {
   try {
     const { title, url, subcategory } = req.body;
     if (!url || !subcategory) return res.status(400).json({ msg: 'url και subcategory είναι υποχρεωτικά' });
@@ -29,7 +36,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // Update
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, validate({ params: idParam, body: linkItemBody.fork(['url'], s => s.optional()) }), async (req, res) => {
   try {
     const doc = await LinkItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(doc);
@@ -39,7 +46,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // Delete
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, validate({ params: idParam }), async (req, res) => {
   try {
     await LinkItem.findByIdAndDelete(req.params.id);
     res.json({ ok: true });

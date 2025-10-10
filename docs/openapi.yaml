@@ -3,7 +3,7 @@ info:
   title: El Greco Webapp API
   version: 0.1.0
 servers:
-  - url: https://new-test-f7kc.onrender.com
+  - url: https://YOUR-RENDER-DOMAIN
 paths:
   /auth/login:
     post:
@@ -36,3 +36,6 @@ paths:
       summary: Create painting
       responses:
         '201': { description: Created }
+
+
+# x-smart-pagination: Αν δεν δοθούν page/limit, ο server εφαρμόζει paginate μόνο όταν total>12, αλλιώς επιστρέφει όλα.

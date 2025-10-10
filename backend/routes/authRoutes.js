@@ -4,8 +4,10 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const router = express.Router();
 const { loginLimiter } = require('../server/security/rateLimiters');
+const validate = require('../server/middleware/validate');
+const { loginBody } = require('../server/validation/schemas');
 
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', loginLimiter, validate({ body: loginBody }), async (req, res) => {
   try {
     const { username, password } = req.body ?? {};
     if (!username || !password) return res.status(400).json({ message: 'Λείπουν πεδία.' });

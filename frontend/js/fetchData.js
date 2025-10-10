@@ -1,12 +1,24 @@
 const API_URL = "";
 import { fetchWithAuth } from './auth.js';
 
-export async function fetchExhibitions() {
+
+export async function fetchExhibitions(subcategoryId, page, limit) {
   try {
-    const response = await fetch('/api/exhibitions');
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+    const qs = new URLSearchParams();
+    if (subcategoryId) qs.set('subcategory', subcategoryId);
+    if (page !== undefined) qs.set('page', page);
+    if (limit !== undefined) qs.set('limit', limit);
+    const response = await fetch(`/api/exhibitions${qs.toString() ? `?${qs}` : ''}`);
+    if (!response.ok) throw new Error('Network response was not ok');
+    const data = await response.json();
+    // Back-compat: if server returned array, wrap it; else return as-is
+    if (Array.isArray(data)) return { items: data, total: data.length, page: 0, pages: 1, hasMore: false };
+    return data;
+  } catch (error) {
+    console.error('Error:', error);
+    throw error;
+  }
+}
     const exhibitions = await response.json();
     return exhibitions;
   } catch (error) {
@@ -79,12 +91,23 @@ export async function deleteExhibition(id) {
 }
 
 // Σύνδεσμοι
-export async function fetchLinks() {
+
+export async function fetchLinks(subcategoryId, page, limit) {
   try {
-    const response = await fetch('/api/links');
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+    const qs = new URLSearchParams();
+    if (subcategoryId) qs.set('subcategory', subcategoryId);
+    if (page !== undefined) qs.set('page', page);
+    if (limit !== undefined) qs.set('limit', limit);
+    const res = await fetch(`/api/links${qs.toString() ? `?${qs}` : ''}`);
+    if (!res.ok) throw new Error('Failed to fetch links');
+    const data = await res.json();
+    if (Array.isArray(data)) return { items: data, total: data.length, page: 0, pages: 1, hasMore: false };
+    return data;
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+}
     return await response.json();
   } catch (error) {
     console.error('Error:', error);
@@ -194,8 +217,18 @@ export async function saveBiography(subId, contentHtml) {
   return await res.json();
 }
 
-export async function listPaintings(subId) {
-  const res = await fetch(`/api/paintings/${encodeURIComponent(subId)}`);
+
+export async function listPaintings(subcategoryId, page, limit) {
+  const qs = new URLSearchParams();
+  if (page !== undefined) qs.set('page', page);
+  if (limit !== undefined) qs.set('limit', limit);
+  const url = `/api/paintings/${subcategoryId}${qs.toString() ? `?${qs}` : ''}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Failed to fetch paintings');
+  const data = await res.json();
+  if (Array.isArray(data)) return { items: data, total: data.length, page: 0, pages: 1, hasMore: false };
+  return data;
+}`);
   if (!res.ok) throw new Error('Failed to fetch paintings');
   return await res.json();
 }

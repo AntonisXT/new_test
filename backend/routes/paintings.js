@@ -3,6 +3,9 @@ const router = express.Router();
 const multer = require('multer');
 const Painting = require('../models/painting');
 const auth = require('../middleware/auth');
+const validate = require('../server/middleware/validate');
+const { pagination, subcategoryParam, idParam } = require('../server/validation/schemas');
+const paginate = require('../server/utils/paginate');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB per file
@@ -51,7 +54,7 @@ router.post('/:subcategoryId', auth, upload.array('images', 10), async (req, res
   }
 });
 
-router.delete('/item/:id', auth, async (req, res) => {
+router.delete('/item/:id', auth, validate({ params: idParam }), async (req, res) => {
   try {
     await Painting.findByIdAndDelete(req.params.id);
     res.json({ ok: true });
