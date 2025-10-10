@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Biography = require('../models/biography');
 const auth = require('../middleware/auth');
+const validate = require('../server/middleware/validate');
+const { subcategoryParam } = require('../server/validation/schemas');
 
 // Get biography content by subcategory id
 router.get('/:subcategoryId', async (req, res) => {
@@ -14,15 +16,19 @@ router.get('/:subcategoryId', async (req, res) => {
 });
 
 // Upsert biography content
-router.post('/:subcategoryId', auth, async (req, res) => {
+router.post('/:subcategoryId', auth, validate({ params: subcategoryParam }), async (req, res) => {
   try {
-    const { contentHtml } = req.body;
-    const updated = await Biography.findOneAndUpdate(
+    const { contentHtml } = req.body || {};
+    if (typeof contentHtml !== 'string') {
+      return res.status(400).json({ msg: 'contentHtml must be a string' });
+    }
+    const update = { contentHtml, updatedAt: new Date() };
+    const doc = await Biography.findOneAndUpdate(
       { subcategory: req.params.subcategoryId },
-      { contentHtml, updatedAt: new Date() },
+      { $set: update, $setOnInsert: { subcategory: req.params.subcategoryId } },
       { new: true, upsert: true }
     );
-    res.json(updated);
+    res.json(doc);
   } catch (e) {
     res.status(400).json({ msg: e.message });
   }
