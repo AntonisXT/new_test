@@ -826,7 +826,8 @@ async function renderBiographyAdmin() {
 
 subSel.addEventListener('change', () => { setBioEnabled(!!subSel.value); });
   async function loadBio() {
-    if (!subSel || !subSel.value) { editor.value = ''; return; }
+    const editor = document.getElementById('bioEditor'); if (!editor) return;
+if (!subSel || !subSel.value) { editor.value = ''; return; }
 
     const doc = await getBiography(subSel.value);
     editor.value = (doc && doc.contentHtml) ? doc.contentHtml : '';
