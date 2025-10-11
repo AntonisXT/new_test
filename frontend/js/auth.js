@@ -8,7 +8,6 @@ function getCsrfTokenFromCookie() {
   } catch { return null; }
 }
 
-
 // -------- Auth actions (cookie-based) --------
 async function login(username, password) {
   const res = await fetch(`/auth/login`, {
@@ -23,32 +22,19 @@ async function login(username, password) {
     alert(msg);
     return false;
   }
-  resetAuthCache();
   return true;
 }
 
 async function logout() {
   try { await fetch('/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
-  resetAuthCache();
 }
-
-let _authStatePromise = null;
 
 async function isLoggedIn() {
   try {
-    if (!_authStatePromise) {
-      _authStatePromise = fetch('/auth/check', { credentials: 'include' })
-        .then(async res => {
-          const data = await res.json().catch(() => ({}));
-          return !!data.authenticated;
-        })
-        .catch(() => false);
-    }
-    return await _authStatePromise;
+    const res = await fetch('/auth/check', { credentials: 'include' });
+    return res.ok;
   } catch { return false; }
 }
-
-function resetAuthCache() { _authStatePromise = null; }
 
 // -------- Centralized fetch with cookies + CSRF --------
 async function fetchWithAuth(url, options = {}) {
@@ -88,4 +74,4 @@ async function fetchWithAuth(url, options = {}) {
   return response;
 }
 
-export { login, isLoggedIn, logout, fetchWithAuth, resetAuthCache };
+export { login, isLoggedIn, logout, fetchWithAuth };
