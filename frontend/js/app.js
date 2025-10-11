@@ -7,16 +7,7 @@ import {
   addSubcategory, updateSubcategory, deleteSubcategory,
   getBiography, saveBiography,
   listPaintings, uploadPaintings, deletePainting
-} from './fetchData.js';\n
-// --- Quiet expected auth errors in console ---
-window.addEventListener('unhandledrejection', (e) => {
-  const msg = String(e?.reason?.message || e?.reason || '').toLowerCase();
-  const status = e?.reason?.status || e?.reason?.code;
-  if (msg.includes('unauthorized') || status === 401) {
-    e.preventDefault();
-  }
-});
-
+} from './fetchData.js';
 
 
 // -- Helper: normalize paged responses --
