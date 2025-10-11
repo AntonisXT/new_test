@@ -37,7 +37,6 @@ async function isLoggedIn() {
     return Boolean(j && j.authenticated);
   } catch { return false; }
 }
-}
 
 // -------- Centralized fetch with cookies + CSRF --------
 async function fetchWithAuth(url, options = {}) {
