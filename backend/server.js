@@ -1,6 +1,7 @@
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const express = require('express');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const path = require('path');
 const favicon = require('serve-favicon');
@@ -51,9 +52,12 @@ app.set('trust proxy', 1);
 connectDB();
 
 // MIDDLEWARES ΠΡΙΝ ΑΠΟ ΤΑ ROUTES
-app.use(cors({ origin: process.env.FRONTEND_ORIGIN, credentials: false }));
+app.use(cors({ origin: process.env.FRONTEND_ORIGIN, credentials: true, methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'], allowedHeaders: ['Content-Type','Authorization','X-CSRF-Token'] }));
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
+app.use(cookieParser());
+app.use(createCsrfMiddleware());
+
 // Sanitize common HTML fields to prevent XSS
 app.use(sanitizeBodyHtml());
 

@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 
 /**
  * Double Submit Cookie CSRF middleware
