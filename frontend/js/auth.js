@@ -1,111 +1,62 @@
 const API_URL = "";
 
-// -- Helpers: decode/validate JWT on the client --
-function parseJwt(token){
-    try{
-        const base64Url = token.split('.')[1];
-        if(!base64Url) return null;
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        return JSON.parse(jsonPayload);
-    }catch(e){ return null; }
-}
-function isTokenExpired(token){
-    const payload = parseJwt(token);
-    if(!payload || !payload.exp) return false;
-    const nowSec = Math.floor(Date.now()/1000);
-    return payload.exp <= nowSec;
-}
+// Cookie-based auth: the server sets an HttpOnly cookie on successful login.
+// We do not store tokens in localStorage anymore.
 
-// Είσοδος χρήστη
+// Lightweight login/logout helpers
 async function login(username, password) {
-    try {
-        const response = await fetch('/auth/login', {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password }),
-        });
-
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({}));
-            alert(error.message || "Λάθος στοιχεία σύνδεσης");
-            return;
-        }
-
-        const data = await response.json();
-        localStorage.setItem("token", data.token);
-        window.location.href = "index.html";
-    } catch (error) {
-        console.error("Απρόσμενο σφάλμα σύνδεσης:", error);
-        alert("Υπήρξε πρόβλημα με το δίκτυο ή τον server");
-    }
+  const res = await fetch(`/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ username, password })
+  });
+  if (!res.ok) {
+    let msg = 'Αποτυχία σύνδεσης';
+    try { const j = await res.json(); msg = j.message || msg; } catch {}
+    alert(msg);
+    return false;
+  }
+  return true;
 }
 
-// Έλεγχος αν ο χρήστης είναι συνδεδεμένος
-function isLoggedIn() {
-    const token = localStorage.getItem("token");
-    if (!token) return false;
-    if (isTokenExpired(token)) { try { localStorage.removeItem("token"); } catch{} return false; }
-    return true;
+async function logout() {
+  try {
+    await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+  } catch {}
 }
 
-function getToken() {
-    return localStorage.getItem("token");
+// Determine if user is logged in by calling a lightweight check endpoint
+async function isLoggedIn() {
+  try {
+    const res = await fetch('/auth/check', { credentials: 'include' });
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
 
-function logout() {
-    localStorage.removeItem("token");
-    // εδώ μπορούμε να κάνουμε redirect στο login αν θέλουμε
-}
-
-// fetch με Auth header
+// Centralized fetch that includes credentials and handles common errors
 async function fetchWithAuth(url, options = {}) {
-    const token = getToken();
-    if (!token) {
-        alert("Δεν έχετε συνδεθεί");
-        throw new Error("No authentication token");
-    }
+  const opts = { ...options };
+  opts.credentials = 'include';
 
-    const isFormData = options && options.body instanceof FormData;
-    const headers = {
-      ...(options.headers || {}),
-      'Authorization': `Bearer ${token}`,
-      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-    };
+  // For JSON payloads, make sure headers are set correctly (unless body is FormData)
+  if (opts.body && !(opts.body instanceof FormData)) {
+    opts.headers = { ...(opts.headers || {}), 'Content-Type': 'application/json' };
+    if (typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
+  }
 
-    try {
-        const response = await fetch(url, { ...options, headers });
+  const response = await fetch(url, opts);
 
-        if (!response.ok) {
-            if (response.status === 401) {
-                // Αναμενόμενο: ληγμένο/λάθος token → logout σιωπηρά + μήνυμα
-                try { logout(); } catch {}
-                alert("Η σύνδεση έληξε, παρακαλώ ξανασυνδεθείτε.");
-                return Promise.reject(new Error("Unauthorized"));
-            }
+  // Handle Unauthorized
+  if (response.status === 401) {
+    try { await logout(); } catch {}
+    alert('Η σύνδεση έληξε, παρακαλώ ξανασυνδεθείτε.');
+    throw new Error('Unauthorized');
+  }
 
-            // Άλλα errors: φιλικό μήνυμα χωρίς console.error
-            let message = 'Το αίτημα απέτυχε';
-            try {
-                const err = await response.json();
-                message = err.message || JSON.stringify(err);
-            } catch {
-                try { message = await response.text(); } catch {}
-            }
-            alert(message);
-            return Promise.reject(new Error(message));
-        }
-
-        return response;
-    } catch (error) {
-        // Απρόσμενο λάθος (δίκτυο κ.λπ.)
-        console.error("Απρόσμενο σφάλμα fetch:", error);
-        alert("Υπήρξε πρόβλημα με το δίκτυο ή τον server");
-        throw error;
-    }
+  return response;
 }
 
-// Εξαγωγή
 export { login, isLoggedIn, logout, fetchWithAuth };

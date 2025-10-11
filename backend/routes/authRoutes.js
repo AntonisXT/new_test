@@ -21,9 +21,18 @@ router.post('/login', loginLimiter, validate({ body: loginBody }), async (req, r
     const token = jwt.sign(
       { sub: user._id.toString(), username: user.username, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '15m' }
     );
-    res.json({ token });
+
+    res.cookie('access_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.COOKIE_SAMESITE || 'None',
+      path: '/',
+      maxAge: 15 * 60 * 1000
+    });
+
+    res.json({ ok: true, user: { username: user.username, role: user.role } });
   } catch (e) {
     console.error(e);
     res.status(500).json({ message: 'Κάτι πήγε στραβά.' });
@@ -31,3 +40,20 @@ router.post('/login', loginLimiter, validate({ body: loginBody }), async (req, r
 });
 
 module.exports = router;
+
+
+router.post('/logout', (req, res) => {
+  res.clearCookie('access_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.COOKIE_SAMESITE || 'None',
+    path: '/'
+  });
+  return res.json({ ok: true });
+});
+
+// Simple check route to verify cookie-authenticated session
+const auth = require('../middleware/auth');
+router.get('/check', auth, (req, res) => {
+  return res.json({ ok: true, user: { id: req.user.sub, username: req.user.username, role: req.user.role } });
+});
