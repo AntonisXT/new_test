@@ -29,6 +29,7 @@ router.post('/login', loginLimiter, validate({ body: loginBody }), async (req, r
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.COOKIE_SAMESITE || 'None',
       path: '/',
+      domain: process.env.COOKIE_DOMAIN || undefined,
       maxAge: 15 * 60 * 1000
     });
 
