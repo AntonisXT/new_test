@@ -89,7 +89,7 @@ export async function deleteLink(id) {
 
 /* ===================== Categories ===================== */
 export async function fetchCategories() {
-  const res = await fetch('/api/categories');
+  const res = await fetch('/api/categories', { credentials: 'include' });
   if (!res.ok) throw new Error('Failed to fetch categories');
   return await res.json();
 }

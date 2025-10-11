@@ -1,41 +1,1006 @@
 openapi: 3.0.3
 info:
-  title: El Greco Webapp API
-  version: 0.1.0
+  title: El Greco API
+  version: 1.0.0
+  description: |
+    REST API for the El Greco web application. Includes authentication, CRUD for
+    categories, subcategories, paintings (with image upload), exhibitions and links.
+    
+    **Notes**
+    - Authentication uses JWT bearer tokens.
+    - Many list endpoints support pagination, simple text search (`q`) and sorting.
+    - Image uploads are `multipart/form-data`.
+    - Replace the production server URL with your actual Render domain.
 servers:
-  - url: https://YOUR-RENDER-DOMAIN
+  - url: http://localhost:4000/api
+    description: Local development
+  - url: https://new-test-f7kc.onrender.com/api
+    description: Production (Render)
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Categories
+  - name: Subcategories
+  - name: Paintings
+  - name: Exhibitions
+  - name: Links
+
 paths:
+  /healthz:
+    get:
+      tags: [Health]
+      summary: Liveness/health probe
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
   /auth/login:
     post:
-      summary: Login
+      tags: [Auth]
+      summary: Login with email & password
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required: [email, password]
               properties:
-                username: { type: string }
-                password: { type: string }
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+            examples:
+              default:
+                value:
+                  email: admin@example.com
+                  password: changeMe123!
       responses:
-        '200': { description: OK }
-        '429': { description: Too many attempts }
-  /api/paintings:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/me:
     get:
-      summary: List paintings (optional pagination via page/limit)
-      parameters:
-        - in: query
-          name: page
-          schema: { type: integer, minimum: 0 }
-        - in: query
-          name: limit
-          schema: { type: integer, minimum: 1, maximum: 100 }
+      tags: [Auth]
+      summary: Get current user profile
+      security: [{ bearerAuth: [] }]
       responses:
-        '200': { description: OK }
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/logout:
     post:
-      summary: Create painting
+      tags: [Auth]
+      summary: Logout (client-side token discard; endpoint provided for symmetry/logging)
+      security: [{ bearerAuth: [] }]
       responses:
-        '201': { description: Created }
+        '204':
+          description: Logged out (no content)
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
 
+  /categories:
+    get:
+      tags: [Categories]
+      summary: List categories
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/SortParam'
+        - $ref: '#/components/parameters/QParam'
+      responses:
+        '200':
+          description: A paginated list of categories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryList'
+    post:
+      tags: [Categories]
+      summary: Create a category
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateInput'
+      responses:
+        '201':
+          description: Created category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
 
-# x-smart-pagination: Αν δεν δοθούν page/limit, ο server εφαρμόζει paginate μόνο όταν total>12, αλλιώς επιστρέφει όλα.
+  /categories/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    get:
+      tags: [Categories]
+      summary: Get a category by id
+      responses:
+        '200':
+          description: A category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    patch:
+      tags: [Categories]
+      summary: Update a category
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryUpdateInput'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      tags: [Categories]
+      summary: Delete a category
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /subcategories:
+    get:
+      tags: [Subcategories]
+      summary: List subcategories
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/SortParam'
+        - $ref: '#/components/parameters/QParam'
+        - in: query
+          name: categoryId
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+          description: Filter by parent category id
+      responses:
+        '200':
+          description: A paginated list of subcategories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSubcategoryList'
+    post:
+      tags: [Subcategories]
+      summary: Create a subcategory
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubcategoryCreateInput'
+      responses:
+        '201':
+          description: Created subcategory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subcategory'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /subcategories/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    get:
+      tags: [Subcategories]
+      summary: Get a subcategory by id
+      responses:
+        '200':
+          description: A subcategory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subcategory'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    patch:
+      tags: [Subcategories]
+      summary: Update a subcategory
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubcategoryUpdateInput'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subcategory'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      tags: [Subcategories]
+      summary: Delete a subcategory
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /paintings:
+    get:
+      tags: [Paintings]
+      summary: List paintings
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/SortParam'
+        - $ref: '#/components/parameters/QParam'
+        - in: query
+          name: categoryId
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+          description: Filter by category id
+        - in: query
+          name: subcategoryId
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+          description: Filter by subcategory id
+      responses:
+        '200':
+          description: A paginated list of paintings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPaintingList'
+    post:
+      tags: [Paintings]
+      summary: Create a painting (with optional image upload)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+                year:
+                  type: string
+                  description: Free-text year or range (e.g., "1577-1579")
+                description:
+                  type: string
+                categoryId:
+                  $ref: '#/components/schemas/ObjectId'
+                subcategoryId:
+                  $ref: '#/components/schemas/ObjectId'
+                image:
+                  type: string
+                  format: binary
+            encoding:
+              image:
+                contentType: image/jpeg, image/png, image/webp
+      responses:
+        '201':
+          description: Created painting
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Painting'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /paintings/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    get:
+      tags: [Paintings]
+      summary: Get a painting by id
+      responses:
+        '200':
+          description: A painting
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Painting'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    patch:
+      tags: [Paintings]
+      summary: Update a painting (optionally replace image)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                year:
+                  type: string
+                description:
+                  type: string
+                categoryId:
+                  $ref: '#/components/schemas/ObjectId'
+                subcategoryId:
+                  $ref: '#/components/schemas/ObjectId'
+                image:
+                  type: string
+                  format: binary
+            encoding:
+              image:
+                contentType: image/jpeg, image/png, image/webp
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Painting'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      tags: [Paintings]
+      summary: Delete a painting
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /exhibitions:
+    get:
+      tags: [Exhibitions]
+      summary: List exhibitions
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/SortParam'
+        - $ref: '#/components/parameters/QParam'
+      responses:
+        '200':
+          description: A paginated list of exhibitions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedExhibitionList'
+    post:
+      tags: [Exhibitions]
+      summary: Create an exhibition
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExhibitionCreateInput'
+      responses:
+        '201':
+          description: Created exhibition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exhibition'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /exhibitions/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    get:
+      tags: [Exhibitions]
+      summary: Get an exhibition by id
+      responses:
+        '200':
+          description: An exhibition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exhibition'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    patch:
+      tags: [Exhibitions]
+      summary: Update an exhibition
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExhibitionUpdateInput'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exhibition'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      tags: [Exhibitions]
+      summary: Delete an exhibition
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /links:
+    get:
+      tags: [Links]
+      summary: List links (external resources)
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/SortParam'
+        - $ref: '#/components/parameters/QParam'
+        - in: query
+          name: paintingId
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+          description: Filter by related painting id
+      responses:
+        '200':
+          description: A paginated list of links
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLinkList'
+    post:
+      tags: [Links]
+      summary: Create a link
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkCreateInput'
+      responses:
+        '201':
+          description: Created link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /links/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    get:
+      tags: [Links]
+      summary: Get a link by id
+      responses:
+        '200':
+          description: A link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    patch:
+      tags: [Links]
+      summary: Update a link
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkUpdateInput'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      tags: [Links]
+      summary: Delete a link
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdParam:
+      in: path
+      name: id
+      required: true
+      schema:
+        $ref: '#/components/schemas/ObjectId'
+      description: Resource identifier
+    PageParam:
+      in: query
+      name: page
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      description: Page number (1-based)
+    LimitParam:
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+      description: Page size
+    SortParam:
+      in: query
+      name: sort
+      schema:
+        type: string
+      description: Sort expression, e.g. `title` or `-createdAt`
+    QParam:
+      in: query
+      name: q
+      schema:
+        type: string
+      description: Simple text search on name/title/description fields
+
+  responses:
+    UnauthorizedError:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            default:
+              value:
+                error: unauthorized
+                message: Missing or invalid token
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            default:
+              value:
+                error: not_found
+                message: Resource not found
+    BadRequestError:
+      description: Bad request / validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+          examples:
+            default:
+              value:
+                error: validation_error
+                message: Invalid input
+                details:
+                  - path: title
+                    message: title is required
+
+  schemas:
+    ObjectId:
+      type: string
+      pattern: '^[a-fA-F0-9]{24}$'
+      example: 60f718d9c2b9a60012abc123
+
+    # Auth & User
+    User:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ObjectId'
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [admin, editor, viewer]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: integer
+          example: 3600
+        user:
+          $ref: '#/components/schemas/User'
+
+    # Core domain
+    Category:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ObjectId'
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CategoryCreateInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    CategoryUpdateInput:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+
+    Subcategory:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ObjectId'
+        categoryId:
+          $ref: '#/components/schemas/ObjectId'
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    SubcategoryCreateInput:
+      type: object
+      required: [categoryId, name]
+      properties:
+        categoryId:
+          $ref: '#/components/schemas/ObjectId'
+        name:
+          type: string
+        description:
+          type: string
+    SubcategoryUpdateInput:
+      type: object
+      properties:
+        categoryId:
+          $ref: '#/components/schemas/ObjectId'
+        name:
+          type: string
+        description:
+          type: string
+
+    Painting:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ObjectId'
+        title:
+          type: string
+        year:
+          type: string
+        description:
+          type: string
+        categoryId:
+          $ref: '#/components/schemas/ObjectId'
+        subcategoryId:
+          $ref: '#/components/schemas/ObjectId'
+        imageUrl:
+          type: string
+          description: Public URL to the stored image (if using object storage) or API route to fetch image
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Exhibition:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ObjectId'
+        title:
+          type: string
+        location:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ExhibitionCreateInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        location:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        description:
+          type: string
+    ExhibitionUpdateInput:
+      type: object
+      properties:
+        title:
+          type: string
+        location:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        description:
+          type: string
+
+    Link:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ObjectId'
+        paintingId:
+          $ref: '#/components/schemas/ObjectId'
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    LinkCreateInput:
+      type: object
+      required: [title, url]
+      properties:
+        paintingId:
+          $ref: '#/components/schemas/ObjectId'
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+    LinkUpdateInput:
+      type: object
+      properties:
+        paintingId:
+          $ref: '#/components/schemas/ObjectId'
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+
+    # Pagination wrappers
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        totalDocs:
+          type: integer
+          example: 42
+        totalPages:
+          type: integer
+          example: 5
+        hasNextPage:
+          type: boolean
+        hasPrevPage:
+          type: boolean
+    PaginatedCategoryList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    PaginatedSubcategoryList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subcategory'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    PaginatedPaintingList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Painting'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    PaginatedExhibitionList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Exhibition'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    PaginatedLinkList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # Errors
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+    ValidationError:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          properties:
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  path:
+                    type: string
+                  message:
+                    type: string
+
+security:
+  - bearerAuth: []

@@ -310,7 +310,7 @@ async function loadExhibitions() {
 
 async function loadLinks() {
   try {
-    const response = await fetch('/api/links');
+    const response = await fetch('/api/links', { credentials: 'include' });
     const links = await response.json();
     const list = document.getElementById('linksList');
     list.innerHTML = links.map(link => `
@@ -375,7 +375,7 @@ window.deleteLink = async function(id) {
 
 async function loadExhibitionsByCategory(category) {
   try {
-    const response = await fetch('/api/exhibitions');
+    const response = await fetch('/api/exhibitions', { credentials: 'include' });
     const exhibitions = await response.json();
     const filteredExhibitions = exhibitions.filter(ex => ex.category === category);
     
@@ -401,7 +401,7 @@ async function loadExhibitionsByCategory(category) {
 
 async function loadLinksByCategory(category) {
   try {
-    const response = await fetch('/api/links');
+    const response = await fetch('/api/links', { credentials: 'include' });
     const links = await response.json();
     const filteredLinks = links.filter(link => link.category === category);
     
@@ -595,7 +595,7 @@ async function renderPaintingsPublic(token) {
     if (resp && resp.hasMore) {
       const more = document.createElement('button');
       more.className = 'button admin-button';
-      more.textContent = 'Φορτώστε περισσότερα';
+      more.textContent = 'Εμφάνιση περισσότερων';
       wrap.appendChild(more);
       gal.parentElement.appendChild(wrap);
       more.addEventListener('click', async () => {
@@ -1005,7 +1005,7 @@ subSel.addEventListener('change', () => { setPaintEnabled(!!subSel.value); });
     wrap.style.marginTop = '12px';
     const more = document.createElement('button');
     more.className = 'button admin-button';
-    more.textContent = 'Φορτώστε περισσότερα';
+    more.textContent = 'Εμφάνιση περισσότερων';
     wrap.appendChild(more);
     // append under the form-row that contains the gallery
     const host = gal.parentElement && gal.parentElement.parentElement ? gal.parentElement.parentElement : gal.parentElement || gal;
