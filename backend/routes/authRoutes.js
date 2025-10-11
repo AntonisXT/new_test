@@ -31,22 +31,3 @@ router.post('/login', loginLimiter, validate({ body: loginBody }), async (req, r
 });
 
 module.exports = router;
-
-
-/** Return current user using cookie-based auth */
-router.get('/me', require('../middleware/auth'), async (req, res) => {
-  try {
-    const user = await User.findById(req.user.sub).select('_id username role');
-    if (!user) return res.status(401).json({ message: 'Unauthorized' });
-    res.json({ user: { id: user._id, username: user.username, role: user.role } });
-  } catch (e) {
-    res.status(500).json({ message: 'Κάτι πήγε στραβά.' , e});
-  }
-});
-
-/** Logout: clear cookies */
-router.post('/logout', (req, res) => {
-  res.clearCookie('access_token', { path: '/' });
-  res.clearCookie('logged_in', { path: '/' });
-  res.json({ ok: true });
-});

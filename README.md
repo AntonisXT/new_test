@@ -64,7 +64,3 @@ All list endpoints accept `?page=&limit=`. If omitted, full list is returned (le
   npm run lint
   npm run format
   ```
-
-
-### Auth mode
-Η αυθεντικοποίηση χρησιμοποιεί πλέον HttpOnly cookie (`access_token`) και βοηθητικό `logged_in=yes` για το UI. Τα αιτήματα από το frontend στέλνονται με `credentials: 'include'` και το CORS επιτρέπει cookies προς το `FRONTEND_ORIGIN`.

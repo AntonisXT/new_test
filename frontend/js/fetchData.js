@@ -8,7 +8,7 @@ export async function fetchExhibitions(subcategoryId, page, limit) {
     if (subcategoryId) qs.set('subcategory', subcategoryId);
     if (page !== undefined) qs.set('page', page);
     if (limit !== undefined) qs.set('limit', limit);
-    const res = await fetch(`/api/exhibitions${qs.toString() ? `?${qs}` : ''}`, { credentials: 'include' });
+    const res = await fetch(`/api/exhibitions${qs.toString() ? `?${qs}` : ''}`);
     if (!res.ok) throw new Error('Failed to fetch exhibitions');
     const data = await res.json();
     return Array.isArray(data) ? { items: data, total: data.length, page: 0, pages: 1, hasMore: false } : data;
@@ -51,7 +51,7 @@ export async function fetchLinks(subcategoryId, page, limit) {
     if (subcategoryId) qs.set('subcategory', subcategoryId);
     if (page !== undefined) qs.set('page', page);
     if (limit !== undefined) qs.set('limit', limit);
-    const res = await fetch(`/api/links${qs.toString() ? `?${qs}` : ''}`, { credentials: 'include' });
+    const res = await fetch(`/api/links${qs.toString() ? `?${qs}` : ''}`);
     if (!res.ok) throw new Error('Failed to fetch links');
     const data = await res.json();
     return Array.isArray(data) ? { items: data, total: data.length, page: 0, pages: 1, hasMore: false } : data;
