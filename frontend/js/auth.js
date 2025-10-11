@@ -35,7 +35,6 @@ async function login(username, password) {
         }
 
         const data = await response.json();
-        localStorage.setItem("token", data.token);
         window.location.href = "index.html";
     } catch (error) {
         console.error("Απρόσμενο σφάλμα σύνδεσης:", error);
@@ -51,10 +50,6 @@ function isLoggedIn() {
     return true;
 }
 
-function getToken() {
-    return localStorage.getItem("token");
-}
-
 function logout() {
     localStorage.removeItem("token");
     // εδώ μπορούμε να κάνουμε redirect στο login αν θέλουμε
@@ -62,7 +57,7 @@ function logout() {
 
 // fetch με Auth header
 async function fetchWithAuth(url, options = {}) {
-    const token = getToken();
+    const token = ;
     if (!token) {
         alert("Δεν έχετε συνδεθεί");
         throw new Error("No authentication token");
@@ -71,7 +66,7 @@ async function fetchWithAuth(url, options = {}) {
     const isFormData = options && options.body instanceof FormData;
     const headers = {
       ...(options.headers || {}),
-      'Authorization': `Bearer ${token}`,
+      
       ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     };
 

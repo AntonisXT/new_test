@@ -277,10 +277,10 @@ manageLinks.addEventListener('click', async (e) => { e.preventDefault(); await r
 // Τροποποίηση της loadExhibitions()
 async function loadExhibitions() {
   try {
-    const token = localStorage.getItem('token');
+    const 
     const response = await fetch('/api/exhibitions', {
       headers: {
-        'Authorization': token
+        
       }
     });
     if (!response.ok) {

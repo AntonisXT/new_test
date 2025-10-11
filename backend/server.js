@@ -60,8 +60,6 @@ app.use(sanitizeBodyHtml());
 
 // ROUTES
 app.use('/auth', authRoutes);
-app.use('/login', authRoutes);
-
 app.use('/api/docs', docsRouter);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/biography', biographyRoutes);
