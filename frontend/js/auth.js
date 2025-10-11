@@ -32,8 +32,11 @@ async function logout() {
 async function isLoggedIn() {
   try {
     const res = await fetch('/auth/state', { credentials: 'include' });
-    return res.ok;
+    if (!res.ok) return false;
+    const j = await res.json().catch(() => ({}));
+    return Boolean(j && j.authenticated);
   } catch { return false; }
+}
 }
 
 // -------- Centralized fetch with cookies + CSRF --------
