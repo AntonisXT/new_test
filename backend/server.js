@@ -1,8 +1,10 @@
+require('dotenv').config();
+
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const express = require('express');
 const cookieParser = require('cookie-parser');
-require('dotenv').config();
+
 const path = require('path');
 const favicon = require('serve-favicon');
 const connectDB = require('./config/db');
@@ -16,9 +18,11 @@ const authRoutes = require('./routes/authRoutes');
 const categoriesRoutes = require('./routes/categories');
 const biographyRoutes = require('./routes/biography');
 const paintingsRoutes = require('./routes/paintings');
+const exhibitionsRoutes = require('./routes/exhibitions');
+const linksRoutes = require('./routes/links');
 
-const app = express();
 const docsRouter = require('./server/docs');
+const app = express();
 
 app.disable('x-powered-by');
 
@@ -47,25 +51,36 @@ app.use(
 app.use(rateLimit({ windowMs: 10 * 60 * 1000, max: 300 }));
 app.set('trust proxy', 1);
 
-// DB
+// Connect DB
 connectDB();
 
-// MIDDLEWARES ΠΡΙΝ ΑΠΟ ΤΑ ROUTES
-app.use(cors({ origin: process.env.FRONTEND_ORIGIN, credentials: false }));
+// --- MIDDLEWARES ΠΡΙΝ ΑΠΟ ΤΑ ROUTES ---
+app.use(
+  cors({
+    origin: process.env.FRONTEND_ORIGIN,
+    credentials: true, // επιτρέπει cookies cross-origin
+  })
+);
+
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
+
+// ✅ ΕΔΩ προστέθηκε η χρήση του cookieParser
 app.use(cookieParser());
+
 // Sanitize common HTML fields to prevent XSS
 app.use(sanitizeBodyHtml());
 
-// ROUTES
+// --- ROUTES ---
 app.use('/auth', authRoutes);
+app.use('/login', authRoutes);
+
 app.use('/api/docs', docsRouter);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/biography', biographyRoutes);
 app.use('/api/paintings', paintingsRoutes);
-app.use('/api/exhibitions', require('./routes/exhibitions'));
-app.use('/api/links', require('./routes/links'));
+app.use('/api/exhibitions', exhibitionsRoutes);
+app.use('/api/links', linksRoutes);
 
 // Centralized error handler
 app.use(errorHandler);

@@ -277,10 +277,10 @@ manageLinks.addEventListener('click', async (e) => { e.preventDefault(); await r
 // Τροποποίηση της loadExhibitions()
 async function loadExhibitions() {
   try {
-    const 
+    const token = localStorage.getItem('token');
     const response = await fetch('/api/exhibitions', {
       headers: {
-        
+        'Authorization': token
       }
     });
     if (!response.ok) {
@@ -310,7 +310,7 @@ async function loadExhibitions() {
 
 async function loadLinks() {
   try {
-    const response = await fetch('/api/links', { credentials: 'include' });
+    const response = await fetch('/api/links');
     const links = await response.json();
     const list = document.getElementById('linksList');
     list.innerHTML = links.map(link => `
@@ -375,7 +375,7 @@ window.deleteLink = async function(id) {
 
 async function loadExhibitionsByCategory(category) {
   try {
-    const response = await fetch('/api/exhibitions', { credentials: 'include' });
+    const response = await fetch('/api/exhibitions');
     const exhibitions = await response.json();
     const filteredExhibitions = exhibitions.filter(ex => ex.category === category);
     
@@ -401,7 +401,7 @@ async function loadExhibitionsByCategory(category) {
 
 async function loadLinksByCategory(category) {
   try {
-    const response = await fetch('/api/links', { credentials: 'include' });
+    const response = await fetch('/api/links');
     const links = await response.json();
     const filteredLinks = links.filter(link => link.category === category);
     
