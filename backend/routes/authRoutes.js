@@ -58,12 +58,28 @@ router.post('/login', loginLimiter, validate({ body: loginBody }), async (req, r
   }
 });
 
-// GET /auth/check  → επιστρέφει ok:true αν υπάρχει έγκυρο cookie
-router.get('/check', auth, (req, res) => {
-  return res.json({
-    ok: true,
-    user: { id: req.user.sub, username: req.user.username, role: req.user.role }
-  });
+
+// GET /auth/check  → "ήπιο" endpoint: ΠΟΤΕ 401. Επιστρέφει authenticated:false αν δεν υπάρχει/δεν ισχύει το token.
+router.get('/check', (req, res) => {
+  try {
+    const token = (req.cookies && req.cookies.access_token) || null;
+    if (!token) {
+      return res.status(200).json({ authenticated: false });
+    }
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      return res.status(200).json({
+        authenticated: true,
+        user: { id: decoded.sub, username: decoded.username, role: decoded.role }
+      });
+    } catch (e) {
+      return res.status(200).json({ authenticated: false });
+    }
+  } catch (e) {
+    return res.status(200).json({ authenticated: false });
+  }
+});
+
 });
 
 // POST /auth/logout  → καθαρίζει όλες τις παραλλαγές cookie
