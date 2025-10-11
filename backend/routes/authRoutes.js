@@ -40,7 +40,7 @@ router.get('/me', require('../middleware/auth'), async (req, res) => {
     if (!user) return res.status(401).json({ message: 'Unauthorized' });
     res.json({ user: { id: user._id, username: user.username, role: user.role } });
   } catch (e) {
-    res.status(500).json({ message: 'Κάτι πήγε στραβά.' });
+    res.status(500).json({ message: 'Κάτι πήγε στραβά.' , e});
   }
 });
 
