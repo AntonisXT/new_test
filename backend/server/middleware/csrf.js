@@ -19,6 +19,14 @@ const DEFAULT_WHITELIST = [
   /^\/favicon\.ico$/,
 ];
 
+function isTrustedOrigin(req) {
+  const origin = req.get('origin') || '';
+  const referer = req.get('referer') || '';
+  const allowed = process.env.FRONTEND_ORIGIN || '';
+  return (!!allowed && (origin === allowed || (referer && referer.startsWith(allowed))));
+}
+
+
 function createCsrfMiddleware(options = {}) {
   const whitelist = options.whitelist || DEFAULT_WHITELIST;
 
@@ -35,10 +43,17 @@ function createCsrfMiddleware(options = {}) {
     const cookieToken = req.cookies?.csrf_token;
     const headerToken = req.get('x-csrf-token');
 
-    if (!cookieToken || !headerToken || cookieToken !== headerToken) {
-      return res.status(403).json({ error: { code: 'CSRF', message: 'Invalid CSRF token' } });
+    // Accept if double-submit tokens match
+    if (cookieToken && headerToken && cookieToken === headerToken) {
+      return next();
     }
-    return next();
+
+    // Alternatively, accept if request comes from trusted same-origin (Origin/Referer)
+    if (isTrustedOrigin(req)) {
+      return next();
+    }
+
+    return res.status(403).json({ error: { code: 'CSRF', message: 'Invalid CSRF token' } });
   };
 }
 
