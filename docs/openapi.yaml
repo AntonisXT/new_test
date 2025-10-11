@@ -12,11 +12,10 @@ info:
     - Image uploads are `multipart/form-data`.
     - Replace the production server URL with your actual Render domain.
 servers:
-  - url: https://new-test-f7kc.onrender.com/api
-    description: Production (Render)
   - url: http://localhost:4000/api
     description: Local development
-
+  - url: https://new-test-f7kc.onrender.com/api
+    description: Production (Render)
 
 tags:
   - name: Health
