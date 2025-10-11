@@ -31,9 +31,13 @@ async function logout() {
 
 async function isLoggedIn() {
   try {
-    const res = await fetch('/auth/check', { credentials: 'include' });
-    return res.ok;
-  } catch { return false; }
+    const res = await fetch('/auth/status', { credentials: 'include' });
+    if (!res.ok) return false;
+    const data = await res.json().catch(() => ({}));
+    return !!data.ok;
+  } catch {
+    return false;
+  }
 }
 
 // -------- Centralized fetch with cookies + CSRF --------
@@ -52,7 +56,7 @@ async function fetchWithAuth(url, options = {}) {
     if (!h.has('Content-Type')) h.set('Content-Type', 'application/json');
   }
 
-  // Never send Authorization anymore
+  // Never send Authorization
   h.delete('Authorization');
   opts.headers = h;
 
