@@ -10,6 +10,7 @@ const morganLogging = require('./server/logging');
 const createCsp = require('./server/security/csp');
 const sanitizeBodyHtml = require('./server/middleware/sanitizeHtml');
 const errorHandler = require('./server/middleware/errorHandler');
+const createCsrfMiddleware = require('./server/middleware/csrf');
 
 const authRoutes = require('./routes/authRoutes');
 const categoriesRoutes = require('./routes/categories');

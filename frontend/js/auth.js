@@ -1,5 +1,12 @@
 const API_URL = "";
 
+// Read CSRF token from document.cookie
+function getCsrfTokenFromCookie() {
+  try {
+    return document.cookie.split('; ').find(row => row.startsWith('csrf_token='))?.split('=')[1] || null;
+  } catch { return null; }
+}
+
 // -- Helpers: decode/validate JWT on the client --
 function parseJwt(token){
     try{
