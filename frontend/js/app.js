@@ -277,7 +277,12 @@ manageLinks.addEventListener('click', async (e) => { e.preventDefault(); await r
 // Τροποποίηση της loadExhibitions()
 async function loadExhibitions() {
   try {
-    const response = await fetch('/api/exhibitions');
+    const token = localStorage.getItem('token');
+    const response = await fetch('/api/exhibitions', {
+      headers: {
+        'Authorization': token
+      }
+    });
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }

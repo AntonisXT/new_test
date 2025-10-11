@@ -8,16 +8,5 @@
       "source": "/auth/(.*)",
       "destination": "https://new-test-f7kc.onrender.com/auth/$1"
     }
-  ],
-  "headers": [
-    {
-      "source": "/(auth|api)/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        }
-      ]
-    }
   ]
 }

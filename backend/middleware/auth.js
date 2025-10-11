@@ -3,9 +3,7 @@ require('dotenv').config();
 
 const auth = (req, res, next) => {
   const raw = req.header('Authorization') || '';
-  const headerToken = raw.startsWith('Bearer ') ? raw.slice(7) : (raw || '');
-  const cookieToken = req.cookies && req.cookies.access_token ? req.cookies.access_token : null;
-  const token = headerToken || cookieToken;
+  const token = raw.startsWith('Bearer ') ? raw.slice(7) : raw;
 
   if (!token) {
     return res.status(401).json({ msg: 'No token, authorization denied' });
@@ -16,7 +14,8 @@ const auth = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (err) {
-    return res.status(401).json({ msg: 'Token is not valid' , err});
+    console.error(err.message);
+    return res.status(401).json({ msg: 'Token is not valid' });
   }
 };
 

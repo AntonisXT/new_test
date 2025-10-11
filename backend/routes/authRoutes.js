@@ -21,19 +21,9 @@ router.post('/login', loginLimiter, validate({ body: loginBody }), async (req, r
     const token = jwt.sign(
       { sub: user._id.toString(), username: user.username, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: '15m' }
+      { expiresIn: '1h' }
     );
-
-    res.cookie('access_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.COOKIE_SAMESITE || 'None',
-      path: '/',
-      domain: process.env.COOKIE_DOMAIN || undefined,
-      maxAge: 15 * 60 * 1000
-    });
-
-    res.json({ ok: true, user: { username: user.username, role: user.role } });
+    res.json({ token });
   } catch (e) {
     console.error(e);
     res.status(500).json({ message: 'Κάτι πήγε στραβά.' });
@@ -44,17 +34,22 @@ module.exports = router;
 
 
 router.post('/logout', (req, res) => {
-  res.clearCookie('access_token', {
+  const base = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.COOKIE_SAMESITE || 'None',
-    path: '/'
-  });
-  return res.json({ ok: true });
-});
+    path: '/',
+  };
+  const domain = process.env.COOKIE_DOMAIN || undefined;
 
-// Simple check route to verify cookie-authenticated session
-const auth = require('../middleware/auth');
-router.get('/check', auth, (req, res) => {
-  return res.json({ ok: true, user: { id: req.user.sub, username: req.user.username, role: req.user.role } });
+  // 1) Clear host-only cookie
+  res.clearCookie('access_token', base);
+  // 2) Clear domain cookie (if it exists)
+  res.clearCookie('access_token', { ...base, domain });
+
+  // 3) Extra safety: overwrite with immediate expiry in both forms
+  res.cookie('access_token', '', { ...base, maxAge: 0 });
+  res.cookie('access_token', '', { ...base, domain, maxAge: 0 });
+
+  return res.json({ ok: true });
 });
