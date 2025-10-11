@@ -31,7 +31,7 @@ async function logout() {
 
 async function isLoggedIn() {
   try {
-    const res = await fetch('/auth/check', { credentials: 'include' });
+    const res = await fetch('/auth/state', { credentials: 'include' });
     return res.ok;
   } catch { return false; }
 }

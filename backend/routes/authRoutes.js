@@ -58,6 +58,29 @@ router.post('/login', loginLimiter, validate({ body: loginBody }), async (req, r
   }
 });
 
+
+// GET /auth/state  → always 200; tells if authenticated
+router.get('/state', (req, res) => {
+  try {
+    // Read token from Authorization: Bearer or from cookie
+    const raw = req.header('Authorization') || '';
+    const headerToken = raw.startsWith('Bearer ') ? raw.slice(7) : (raw || '');
+    const cookieToken = req.cookies && req.cookies.access_token ? req.cookies.access_token : null;
+    const token = headerToken || cookieToken;
+
+    if (!token) {
+      return res.status(200).json({ authenticated: false });
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return res.status(200).json({
+      authenticated: true,
+      user: { id: decoded.sub, username: decoded.username, role: decoded.role }
+    });
+  } catch (e) {
+    return res.status(200).json({ authenticated: false });
+  }
+});
+
 // GET /auth/check  → επιστρέφει ok:true αν υπάρχει έγκυρο cookie
 router.get('/check', auth, (req, res) => {
   return res.json({
