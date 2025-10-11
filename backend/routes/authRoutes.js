@@ -10,11 +10,13 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// POST /auth/login → set cookies
+// POST /auth/login  → Set-Cookie: access_token (HttpOnly) + csrf_token (readable)
 router.post('/login', loginLimiter, validate({ body: loginBody }), async (req, res) => {
   try {
     const { username, password } = req.body ?? {};
-    if (!username || !password) return res.status(400).json({ message: 'Λείπουν πεδία.' });
+    if (!username || !password) {
+      return res.status(400).json({ message: 'Λείπουν πεδία.' });
+    }
 
     const user = await User.findOne({ username, isActive: true });
     if (!user) return res.status(401).json({ message: 'Λάθος στοιχεία.' });
@@ -28,6 +30,7 @@ router.post('/login', loginLimiter, validate({ body: loginBody }), async (req, r
       { expiresIn: '15m' }
     );
 
+    // HttpOnly access cookie
     res.cookie('access_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -37,6 +40,7 @@ router.post('/login', loginLimiter, validate({ body: loginBody }), async (req, r
       maxAge: 15 * 60 * 1000
     });
 
+    // CSRF token (αναγνώσιμο από JS)
     const csrfToken = crypto.randomBytes(16).toString('hex');
     res.cookie('csrf_token', csrfToken, {
       httpOnly: false,
@@ -54,24 +58,15 @@ router.post('/login', loginLimiter, validate({ body: loginBody }), async (req, r
   }
 });
 
-// GET /auth/check (protected)
+// GET /auth/check  → επιστρέφει ok:true αν υπάρχει έγκυρο cookie
 router.get('/check', auth, (req, res) => {
-  return res.json({ ok: true, user: { id: req.user.sub, username: req.user.username, role: req.user.role } });
+  return res.json({
+    ok: true,
+    user: { id: req.user.sub, username: req.user.username, role: req.user.role }
+  });
 });
 
-// GET /auth/status (always 200)
-router.get('/status', (req, res) => {
-  try {
-    const token = req.cookies?.access_token;
-    if (!token) return res.json({ ok: false });
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return res.json({ ok: true, user: { id: decoded.sub, username: decoded.username, role: decoded.role } });
-  } catch {
-    return res.json({ ok: false });
-  }
-});
-
-// POST /auth/logout → clear cookies (host-only + domain)
+// POST /auth/logout  → καθαρίζει όλες τις παραλλαγές cookie
 router.post('/logout', (req, res) => {
   const base = {
     httpOnly: true,

@@ -29,11 +29,7 @@ export async function addExhibition(payload) {
 }
 
 export async function updateExhibition(id, payload) {
-  const res = await fetchWithAuth(`/api/exhibitions/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
+  const res = await fetchWithAuth(`/api/exhibitions/${id}`, { method: 'PUT', body: payload });
   if (!res.ok) throw new Error('Failed to update exhibition');
   return await res.json();
 }
@@ -72,11 +68,7 @@ export async function addLink(payload) {
 }
 
 export async function updateLink(id, payload) {
-  const res = await fetchWithAuth(`/api/links/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
+  const res = await fetchWithAuth(`/api/links/${id}`, { method: 'PUT', body: payload });
   if (!res.ok) throw new Error('Failed to update link');
   return await res.json();
 }
@@ -105,11 +97,7 @@ export async function addCategory(payload) {
 }
 
 export async function updateCategory(id, payload) {
-  const res = await fetchWithAuth(`/api/categories/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
+  const res = await fetchWithAuth(`/api/categories/${id}`, { method: 'PUT', body: payload });
   if (!res.ok) throw new Error('Failed to update category');
   return await res.json();
 }
@@ -129,21 +117,13 @@ export async function fetchSubcategories(categoryId) {
 }
 
 export async function addSubcategory(categoryId, payload) {
-  const res = await fetchWithAuth(`/api/categories/${categoryId}/subcategories`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
+  const res = await fetchWithAuth(`/api/categories/${categoryId}/subcategories`, { method: 'POST', body: payload });
   if (!res.ok) throw new Error('Failed to add subcategory');
   return await res.json();
 }
 
 export async function updateSubcategory(id, payload) {
-  const res = await fetchWithAuth(`/api/categories/subcategories/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
+  const res = await fetchWithAuth(`/api/categories/subcategories/${id}`, { method: 'PUT', body: payload });
   if (!res.ok) throw new Error('Failed to update subcategory');
   return await res.json();
 }

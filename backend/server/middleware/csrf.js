@@ -1,7 +1,8 @@
 /**
  * Double Submit Cookie CSRF middleware
- * - State-changing methods only (POST/PUT/PATCH/DELETE).
- * - Checks X-CSRF-Token header against any csrf_token cookie value.
+ * - For state-changing methods only (POST/PUT/PATCH/DELETE).
+ * - Checks that X-CSRF-Token header equals one of the csrf_token cookies.
+ * - Whitelists common non-mutating/auth paths.
  */
 function isStateChanging(req) {
   const m = (req.method || '').toUpperCase();
@@ -12,13 +13,12 @@ const DEFAULT_WHITELIST = [
   /^\/auth\/login$/,
   /^\/auth\/logout$/,
   /^\/auth\/check$/,
-  /^\/auth\/status$/,
   /^\/api\/docs(\/.*)?$/,
   /^\/openapi\.json$/,
   /^\/favicon\.ico$/,
 ];
 
-/** Extract all cookie values for a given name from raw Cookie header */
+/** Extract all cookie values for a given name from raw Cookie header (handles host-only & domain cookies) */
 function getCookieValues(req, name) {
   const raw = req.headers?.cookie || '';
   const parts = raw.split(';').map(s => s.trim()).filter(Boolean);
@@ -40,8 +40,11 @@ function createCsrfMiddleware(options = {}) {
 
   return function requireCsrf(req, res, next) {
     if (!isStateChanging(req)) return next();
+
     const path = req.path || req.url || '';
-    for (const rx of whitelist) { if (rx.test(path)) return next(); }
+    for (const rx of whitelist) {
+      if (rx.test(path)) return next();
+    }
 
     const headerToken = req.get('x-csrf-token');
     const cookieTokens = getCookieValues(req, 'csrf_token');
