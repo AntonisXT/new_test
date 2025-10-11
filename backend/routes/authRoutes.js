@@ -76,7 +76,7 @@ router.get('/state', (req, res) => {
       authenticated: true,
       user: { id: decoded.sub, username: decoded.username, role: decoded.role }
     });
-  } catch (e) {
+  } catch {
     return res.status(200).json({ authenticated: false });
   }
 });
