@@ -32,7 +32,6 @@ async function logout() {
 async function isLoggedIn() {
   try {
     const res = await fetch('/auth/check', { credentials: 'include' });
-    if (res.status === 401) return false;
     return res.ok;
   } catch { return false; }
 }
@@ -60,9 +59,9 @@ async function fetchWithAuth(url, options = {}) {
   const response = await fetch(url, opts);
 
   if (response.status === 401) {
-    // Quietly return the 401 to the caller; no alert/throw to avoid noisy console
     try { await logout(); } catch {}
-    return response;
+    alert('Η σύνδεση έληξε, παρακαλώ ξανασυνδεθείτε.');
+    throw new Error('Unauthorized');
   }
 
   if (!response.ok) {
