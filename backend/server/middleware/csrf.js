@@ -19,14 +19,6 @@ const DEFAULT_WHITELIST = [
   /^\/favicon\.ico$/,
 ];
 
-function isTrustedOrigin(req) {
-  const origin = req.get('origin') || '';
-  const referer = req.get('referer') || '';
-  const allowed = process.env.FRONTEND_ORIGIN || '';
-  return (!!allowed && (origin === allowed || (referer && referer.startsWith(allowed))));
-}
-
-
 function createCsrfMiddleware(options = {}) {
   const whitelist = options.whitelist || DEFAULT_WHITELIST;
 
@@ -40,21 +32,36 @@ function createCsrfMiddleware(options = {}) {
       if (rx.test(path)) return next();
     }
 
-    const cookieToken = req.cookies?.csrf_token;
     const headerToken = req.get('x-csrf-token');
+    const cookieTokens = getCookieValues(req, 'csrf_token');
 
-    // Accept if double-submit tokens match
-    if (cookieToken && headerToken && cookieToken === headerToken) {
-      return next();
+    if (!headerToken || cookieTokens.size === 0 || !cookieTokens.has(headerToken)) {
+      return res.status(403).json({ error: { code: 'CSRF', message: 'Invalid CSRF token' } });
     }
-
-    // Alternatively, accept if request comes from trusted same-origin (Origin/Referer)
-    if (isTrustedOrigin(req)) {
-      return next();
-    }
-
-    return res.status(403).json({ error: { code: 'CSRF', message: 'Invalid CSRF token' } });
+    return next();
   };
+}
+
+
+
+/**
+ * Extract all cookie values for a given name. Handles host-only and domain cookies,
+ * and returns a set of decoded values.
+ */
+function getCookieValues(req, name) {
+  const raw = req.headers?.cookie || '';
+  const parts = raw.split(';').map(s => s.trim()).filter(Boolean);
+  const values = new Set();
+  for (const p of parts) {
+    const idx = p.indexOf('=');
+    if (idx === -1) continue;
+    const k = p.slice(0, idx);
+    const v = p.slice(idx + 1);
+    if (k === name) {
+      try { values.add(decodeURIComponent(v)); } catch { values.add(v); }
+    }
+  }
+  return values;
 }
 
 module.exports = createCsrfMiddleware;
